@@ -1,0 +1,10 @@
+# The read of MoLFormer-c3 for the paper: token mean @9 with the <eos> state @12 (the final layer) appended,
+# 768 + 768 = 1,536 dims, as the read-layer scan measured it (the mean half of the cls+mean scan at 9, part: mean;
+# the <eos> of molformer-c3-eos-l12 at 12, append). A connector / ridge `input` (writes.inputs.InputSpec), as
+# shared/read-mimic.yaml: the molformer-c3-mean-l9 recipe's layer 9 (pooling mean: the scan's mean half, the same
+# tokens) with molformer-c3-eos-l12's layer 12 appended per object (`append`; both extractions' artifacts are
+# listed in the citing config's embeddings).
+recipe: molformer-c3-mean-l9
+layers: [9]
+combine: single
+append: {recipe: molformer-c3-eos-l12, layer: 12}

@@ -1,0 +1,15 @@
+# A third-party encoder (examples/guides/extending.md §2): ESM-2 8M (public, no login), its final post-LayerNorm layer
+# (6 blocks -> hidden_states index 6), mean-pooled over residues. The extractor `esm2` is the plugin
+# examples/esm2_extractor.py, imported through `plugins:` (the checkout's root must be importable: run from $AIMM or
+# put it on PYTHONPATH). `environment: lip` runs it in the release environment, in-process (transformers is there).
+name: esm2-8m
+extractor: esm2
+domain: protein
+model_id: facebook/esm2_t6_8M_UR50D
+revision: c731040fcd8d73dceaa04b0a8e6329b345b0f5df
+read: [6]
+pooling: mean
+environment: lip
+batch_tokens: 8192
+options: {max_residues: 1022}   # ESM-2 was trained on crops of 1,024 tokens: 1,022 residues plus <cls> and <eos>
+plugins: [examples.esm2_extractor]

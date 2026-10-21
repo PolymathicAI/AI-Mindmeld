@@ -1,0 +1,7 @@
+# The read layers of unimol2-1.1b: [23], the chosen read: the recipe's pooling cls+mean (the CLS state concatenated
+# with the atom mean, CLS first) at layer 23, 1,536 + 1,536 = 3,072 dims, one layer of the per-layer cls|mean scan
+# (encoders/unimol2-1.1b-without-conformer-retry.yaml). One home for one choice: the single-layer recipe's read, the connectors'
+# input.layers, which read the all-layer recipe unimol2-1.1b at this layer (connectors/*/unimol2-1.1b.yaml), and
+# the prep ridges' input.layers (ridges/*/unimol2-1.1b.yaml) cite it by $ref, as do the layer-selection study's
+# held-out scan ridge and injection scan.
+[23]

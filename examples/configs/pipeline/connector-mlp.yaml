@@ -1,0 +1,20 @@
+# The worked example's connector with an `mlp` map (examples/guides/extending.md §6, "Choosing a connector kind"): the same
+# one slot token, layer-0 constant and write layers as connector.yaml, each write a feed-forward block on the pooled
+# embedding (latent_interconnect.writes.kinds_mlp). It reads the same pooled ESM-C 300M vectors and starts from the
+# same ridge fits: at step 0 it writes the rank-d_s part of the ridge map exactly. d_s (the stream width) must be at
+# most min(d_in, d_model) = min(960, 896); 256 and ff_mult 2 keep it small for a CPU.
+name: qwen-esmc300m-mlp
+receiver: qwen2.5-0.5b-instruct
+input: {recipe: esmc-300m, layers: [30]}
+tokens:
+  - {target: name}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+    - [4, 8, 12, 16]
+kind: mlp
+kind_params: {d_s: 256, ff_mult: 2}
+alpha: {first: null, init: 0.5, learned: true}
+seed: 0
+layer_choice: {note: "worked CPU example: connector.yaml's layers, without a layer study (examples/guides/choosing_layers.md)"}

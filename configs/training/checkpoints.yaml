@@ -1,0 +1,5 @@
+# The paper runs' checkpoint policy (training.config.CheckpointSpec). Committed checkpoints follow the training-time
+# monitor evaluations (every 200 steps); the resume state is saved at the same cadence and on SIGUSR1 (on_signal),
+# so a preempted 8xH200 job loses at most 200 steps.
+resume_every: 200
+on_signal: true

@@ -1,0 +1,24 @@
+# gemma-3-4b-it's molecule-transfer-novel-scaffold suite on molecule-domain, the molecule domain whose sets drop the
+# 39 porphyrin-string molecules and the 6 without a ChEBI formula (and the mass task's id reworded), under the
+# receiver's answers.
+id: molecule-transfer-novel-scaffold
+kind: yes_no
+domains:
+- name: molecule
+  data: {$pin: molecule-domain}
+item_set: {$pin: items/molecule-eval-novel-scaffold}
+tasks: [metabolite, drug, eukaryotic metabolite, antineoplastic agent, bacterial metabolite, plant metabolite, animal metabolite,
+  pesticide, mammalian metabolite, fungal metabolite, human metabolite, neurotransmitter agent, antiinfective agent, cardiovascular
+    drug, central nervous system drug, central nervous system depressant, protective agent, agrochemical, antiparasitic agent,
+  environmental contaminant, insecticide, antihypertensive agent, anti-inflammatory agent, vasodilator agent, analgesic, ophthalmology
+    drug, mouse metabolite, xenobiotic metabolite, psychotropic drug, mass > 329.29 Da, net charge !=
+    0, contains nitrogen, contains phosphorus, contains sulfur, 'contains a halogen (F, Cl, Br or I)']
+frame: {id: a5, user: 'Here is an unknown compound, given to you as an embedding:<SLOT:x>. {question}'}
+slots:
+- {name: x, role: object, connector: m}
+conditions:
+- {object: own}
+thinking: false
+capability: score
+params: {}
+answer: {$ref: ../../answers/gemma-3.yaml}

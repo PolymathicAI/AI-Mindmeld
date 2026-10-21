@@ -1,0 +1,27 @@
+# gemma-3-12b-it's version of runs/kimi-k2.6/molformer-c3.yaml.
+destination: connectors/gemma-3-12b-it/molformer-c3
+name: molformer-c3-affine
+connector: {$ref: ../../connectors/gemma-3-12b-it/molformer-c3.yaml}
+receiver: {$ref: ../../receivers/gemma-3-12b-it.yaml}
+encoder: {$ref: ../../encoders/molformer-c3-mean-l9.yaml}
+domain:
+  name: molecule
+  data: {$pin: molecule-domain}
+ridge:
+  name_described: {$pin: ridges/gemma-3-12b-it/molformer-c3/ridge}
+embeddings:
+- {$pin: embeddings/molformer-c3/mean-l9-molecule-train/embeddings}
+- {$pin: embeddings/molformer-c3/eos-l12-molecule-train/embeddings}
+- {$pin: embeddings/molformer-c3/mean-l9-molecule-monitor/embeddings}
+- {$pin: embeddings/molformer-c3/eos-l12-molecule-monitor/embeddings}
+training_set: {$pin: molecule-training-set/training_set}
+mixture: {$ref: ../../training/gemma-3-12b-it/mixture-molecule.yaml}
+steps: 2000
+batch: 85
+micro_batch: 8
+seed: 0
+device_class: A100
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+eval_suite: {$ref: ../../monitor/molecule.yaml}
+eval_every: 200

@@ -1,0 +1,13 @@
+# kimi-k2.6's protein-transfer suite for the esmc-6b-mlp4-staggered connector (an ESM-C 6B multi-token run that stopped
+# early) at step 0. Its checkpoint is the one pinned by the stopped run's publication
+# (../../runs/kimi-k2.6/esmc-6b-mlp4-staggered-achieved.yaml, run.achieved). It is the same artifact a completed run would pin
+# as connectors/kimi-k2.6/esmc-6b-mlp4-staggered-training/step_000000, so the computation is the same whichever name is used
+# (a loaded config holds the pinned digest, not the name).
+destination: connectors/kimi-k2.6/esmc-6b-mlp4-staggered/protein-transfer/untrained
+suite: {$ref: ../../suite_specs/kimi-k2.6/protein-transfer.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/esmc-6b-mlp4-staggered/step_000000}}
+inputs: {m: [{$pin: embeddings/esmc-6b/protein-eval}]}
+step: 0
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

@@ -1,0 +1,72 @@
+# gemma-3-12b-it's version of streams/relational-protein.yaml: under the receiver's answers.
+answers: protein
+families:
+  profile: [family, location, function, pathway]
+  enzyme: [ec, catalytic_activity]
+  same_family: [family]
+  compare_location: [location]
+  differences: [family, location, ec, pathway]
+  commonalities: [family, location, ec, pathway]
+  ec_depth: [ec]
+  pathway_relation: [pathway]
+  odd_one_out_family: [family]
+  odd_one_out_location: [location]
+prompts:
+  profile: ['Give a short profile of the protein<SLOT:p1>: its family, where it is found and what it does.', 'Summarize what
+      is known about<SLOT:p1> in a few sentences.', "<SLOT:p1> \u2014 describe its family, localization and function.", 'Write
+      a brief annotation for the protein<SLOT:p1>.', 'What kind of protein is<SLOT:p1>, where does it act, and what does it
+      do?']
+  enzyme: ['What kind of enzyme is<SLOT:p1>, and which reaction does it catalyze?', 'Classify the enzyme<SLOT:p1> and describe
+      its reaction.', '<SLOT:p1> is an enzyme. What is its EC class and what does it do?', 'Name the enzyme class and the
+      reaction catalyzed by the protein<SLOT:p1>.']
+  same_family: ['Do the proteins<SLOT:p1> and<SLOT:p2> belong to the same family? Explain.', 'Are<SLOT:p1> and<SLOT:p2> members
+      of one protein family?', 'Is<SLOT:p1> in the same family as<SLOT:p2>? Answer and say which family or families.', 'Here
+      are two proteins,<SLOT:p1> and<SLOT:p2>. Are they related by family?', "<SLOT:p1> and<SLOT:p2> \u2014 do these two proteins\
+      \ come from the same protein family? Explain your answer.", 'Do the following two proteins belong to the same family,
+      and which family is each in:<SLOT:p1> and<SLOT:p2>?']
+  compare_location: ['Where are<SLOT:p1> and<SLOT:p2> found in the cell? Compare them.', 'Compare the subcellular localization
+      of<SLOT:p1> and<SLOT:p2>.', 'Do<SLOT:p1> and<SLOT:p2> localize to the same compartment?', 'Compare where<SLOT:p1> and<SLOT:p2>
+      are found in the cell.', '<SLOT:p1> and<SLOT:p2>: where in the cell is each of these proteins found, and do their locations
+      overlap?']
+  differences: ['How do the proteins<SLOT:p1> and<SLOT:p2> differ?', 'What are the main differences between<SLOT:p1> and<SLOT:p2>?',
+    'Contrast<SLOT:p1> with<SLOT:p2>.', 'Consider the proteins<SLOT:p1> and<SLOT:p2>. In what ways are they different?', '<SLOT:p1>
+      versus<SLOT:p2>: what are the main differences between these two proteins?']
+  commonalities: ['What do the proteins<SLOT:p1> and<SLOT:p2> have in common?', 'How are<SLOT:p1> and<SLOT:p2> similar?',
+    'Name the similarities between<SLOT:p1> and<SLOT:p2>.', 'Two proteins are given:<SLOT:p1> and<SLOT:p2>. What do they share?',
+    '<SLOT:p1> and<SLOT:p2>: what do these two proteins have in common?']
+  ec_depth: ['Both<SLOT:p1> and<SLOT:p2> are enzymes. How closely related are their EC classifications?', 'Compare the enzyme
+      classes of<SLOT:p1> and<SLOT:p2>.', 'Do<SLOT:p1> and<SLOT:p2> catalyze the same kind of reaction? Answer in terms of
+      EC numbers.', '<SLOT:p1> and<SLOT:p2> are both enzymes. How many levels of their EC numbers do they share?']
+  pathway_relation: ['Do<SLOT:p1> and<SLOT:p2> take part in the same metabolic pathway?', 'Compare the pathways of<SLOT:p1>
+      and<SLOT:p2>.', 'How are<SLOT:p1> and<SLOT:p2> related metabolically?', '<SLOT:p1> and<SLOT:p2>: do they act in the
+      same metabolic pathway, in related pathways, or in unrelated ones?']
+  odd_one_out_family: ['Which of<SLOT:p1>,<SLOT:p2> and<SLOT:p3> is the odd one out by protein family, and why?', 'Three proteins:<SLOT:p1>,<SLOT:p2>,<SLOT:p3>.
+      Two share a family. Which one does not?', '<SLOT:p1>,<SLOT:p2> and<SLOT:p3> are three proteins, two of which share a
+      protein family. Which one is the odd one out?', 'Which of these three proteins falls outside the family the other two
+      share:<SLOT:p1>,<SLOT:p2> or<SLOT:p3>?']
+  odd_one_out_location: ['Which of<SLOT:p1>,<SLOT:p2> and<SLOT:p3> localizes differently from the other two?', 'Among<SLOT:p1>,<SLOT:p2>
+      and<SLOT:p3>, which one is found in a different part of the cell?', '<SLOT:p1>,<SLOT:p2>,<SLOT:p3>: which of these proteins
+      is found in a different part of the cell from the other two?', 'Two of these three proteins share a subcellular location.
+      Which one is found elsewhere:<SLOT:p1>,<SLOT:p2> or<SLOT:p3>?']
+fields: {family: protein_families, location: subcellular_location, function: function, pathway: pathway, ec: ec, catalytic_activity: catalytic_activity}
+sampling: cluster_sqrt
+p_hard: 0.5
+max_target_tokens: 96
+floor: 0.1
+fact_curves:
+  family: {family: flat, floor: 0.1}
+  superfamily: {family: flat, floor: 0.1}
+  location: {family: exp, floor: 0.1, tau: 0.7758}
+  topology: {family: exp, floor: 0.1, tau: 0.7758}
+  function: {family: power, floor: 0.1, tau: 0.001, p: 1.2411}
+  pathway: {family: power, floor: 0.1, tau: 0.001, p: 1.608}
+  category: {family: power, floor: 0.1, tau: 0.001, p: 1.608}
+  step: {family: power, floor: 0.1, tau: 0.001, p: 1.608}
+  ec_number: {family: flat, floor: 0.1}
+  ec_class: {family: flat, floor: 0.1}
+  catalytic: {family: power, floor: 0.1, tau: 0.001, p: 1.5232}
+  choice: {family: single_token, floor: 0.1}
+  verdict: null
+grammar: {$ref: ../grammar-protein.yaml}
+answer: {$ref: ../../answers/gemma-3.yaml}
+instruction: Answer Yes or No, then explain.

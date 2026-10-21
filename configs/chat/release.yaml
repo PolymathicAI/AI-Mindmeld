@@ -1,0 +1,57 @@
+# The chat config of `aimm-chat serve` (latent_interconnect.chat.config.ChatConfig): Gemma 3 4B and Gemma 3 12B on one
+# local GPU, and Kimi K2.6 on one node of eight GPUs (in the separate vLLM environment), with released connectors.
+# `aimm-chat serve --model <receiver id>` serves one receiver; another is a restart. It serves only the connectors
+# whose bundles are installed in LIP_DATA (`aimm-chat check` lists them and the bundles each needs). examples/guides/chat.md,
+# "Chat with aimm-chat", has the connector table.
+#
+# A label is the connector's name in the UI; "raw sequence unavailable" marks a connector whose raw input the release
+# install cannot encode (no public weights or no environment).
+inputs:
+  protein: {id: uniprot, value: sequence, max_chars: 4000}
+  molecule: {id: chebi, value: smiles, max_chars: 1000}
+defaults: {thinking: false, temperature: 0.6, max_tokens: 256, system: ""}
+# The largest answer cap a request may ask for; `aimm-chat serve` lowers it to 256 by default (--max-tokens-cap).
+max_tokens_cap: 2048
+receivers:
+  gemma-3-4b-it:
+    label: Gemma 3 4B
+    receiver: {$ref: ../receivers/gemma-3-4b-it.yaml}
+    context: 8192
+    # estimated cold start to ready, shown by the UI while loading
+    expected_load_s: 168
+    connectors:
+      esmc-600m: {label: "ESM-C 600M", run: {$ref: ../runs/gemma-3-4b-it/esmc-600m.yaml}, step: 2000}
+      esmc-6b: {label: "ESM-C 6B", run: {$ref: ../runs/gemma-3-4b-it/esmc-6b.yaml}, step: 2000}
+      mimic: {label: "MIMIC [raw sequence unavailable]", run: {$ref: ../runs/gemma-3-4b-it/mimic.yaml}, step: 2000}
+      pglm-1b: {label: "PGLM-1B [raw sequence unavailable]", run: {$ref: ../runs/gemma-3-4b-it/pglm-1b.yaml}, step: 2000}
+      chemfm-1b: {label: "ChemFM-1B", run: {$ref: ../runs/gemma-3-4b-it/chemfm-1b.yaml}, step: 2000}
+      molformer-c3: {label: "MoLFormer-c3", run: {$ref: ../runs/gemma-3-4b-it/molformer-c3.yaml}, step: 2000}
+      unimol2-1.1b: {label: "Uni-Mol2 1.1B", run: {$ref: ../runs/gemma-3-4b-it/unimol2-1.1b.yaml}, step: 2000}
+  gemma-3-12b-it:
+    label: Gemma 3 12B
+    receiver: {$ref: ../receivers/gemma-3-12b-it.yaml}
+    context: 8192
+    expected_load_s: 302
+    connectors:
+      esmc-600m: {label: "ESM-C 600M", run: {$ref: ../runs/gemma-3-12b-it/esmc-600m.yaml}, step: 2000}
+      esmc-6b: {label: "ESM-C 6B", run: {$ref: ../runs/gemma-3-12b-it/esmc-6b.yaml}, step: 2000}
+      mimic: {label: "MIMIC [raw sequence unavailable]", run: {$ref: ../runs/gemma-3-12b-it/mimic.yaml}, step: 2000}
+      pglm-1b: {label: "PGLM-1B [raw sequence unavailable]", run: {$ref: ../runs/gemma-3-12b-it/pglm-1b.yaml}, step: 2000}
+      chemfm-1b: {label: "ChemFM-1B", run: {$ref: ../runs/gemma-3-12b-it/chemfm-1b.yaml}, step: 2000}
+      molformer-c3: {label: "MoLFormer-c3", run: {$ref: ../runs/gemma-3-12b-it/molformer-c3.yaml}, step: 2000}
+      unimol2-1.1b: {label: "Uni-Mol2 1.1B", run: {$ref: ../runs/gemma-3-12b-it/unimol2-1.1b.yaml}, step: 2000}
+  kimi-k2.6:
+    label: Kimi K2.6
+    receiver: {$ref: ../receivers/kimi-k2.6.yaml}
+    # kimi-vllm: one request in flight; aimm-chat passes max_model_len=<context> to the engine, which refuses to start
+    # unless its KV cache holds max_num_seqs x max_model_len tokens
+    generation_plan: {max_num_seqs: 1, max_num_batched_tokens: 16384}
+    context: 16384
+    # an estimate
+    expected_load_s: 1800
+    # Offered: one connector. Not offered (released, not served with aimm-chat): kimi-k2.6__esmc-600m, __mimic,
+    # __pglm-1b, __esmc-6b and the molecule connectors __chemfm-1b, __molformer-c3, __unimol2-1.1b.
+    # Each can be added as an entry: all-connectors.yaml has the lines of the six paper connectors, and
+    # __esmc-6b's run is ../runs/kimi-k2.6/esmc-6b.yaml.
+    connectors:
+      esmc-6b-mlp4-staggered: {label: "ESM-C 6B, 4-token MLP", run: {$ref: runs/kimi-k2.6__esmc-6b-mlp4-staggered.yaml}, step: 2000}

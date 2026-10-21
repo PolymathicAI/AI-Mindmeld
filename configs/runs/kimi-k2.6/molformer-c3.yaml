@@ -1,0 +1,35 @@
+# The paper's Kimi K2.6 x MoLFormer-c3 run: the molecule domain (molecule-domain), the molecule training set and the
+# training-time monitor suite (../../monitor/molecule.yaml). Its vectors are extractions of this domain's structure
+# strings. Kept from the run on an earlier version of the molecule data (no refit, no reselection): the connector
+# (read, write layers, starting alphas), the step-0 ridge (fitted on that version's fit set and values), the mixture,
+# the optimizer, the checkpoints, the steps, the seed and the batch.
+destination: connectors/kimi-k2.6/molformer-c3
+name: molformer-c3-affine
+connector: {$ref: ../../connectors/kimi-k2.6/molformer-c3.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/molformer-c3-mean-l9.yaml}
+domain: {name: molecule, data: {$pin: molecule-domain}}
+ridge: {name_described: {$pin: ridges/kimi-k2.6/molformer-c3/ridge}}  # the source-floor target
+embeddings:
+  - {$pin: embeddings/molformer-c3/mean-l9-molecule-train/embeddings}
+  - {$pin: embeddings/molformer-c3/eos-l12-molecule-train/embeddings}
+  - {$pin: embeddings/molformer-c3/mean-l9-molecule-monitor/embeddings}
+  - {$pin: embeddings/molformer-c3/eos-l12-molecule-monitor/embeddings}
+# The screened molecule training set of the group split, cited by pin; the training embeddings cover the band-split
+# domain's training objects (a superset of the group split's).
+training_set: {$pin: molecule-training-set/training_set}
+mixture: {$ref: ../../training/mixture-molecule.yaml}
+steps: 2000
+# The autotune's batch, 85.
+batch: 85
+# This case's own micro-batch declaration: null, one `loss` call per step. It is declared here and not in a
+# shared file, so a value entered for this case moves no other run.
+micro_batch: null
+seed: 0
+device_class: 8xH200
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+# The training-time monitor suite (../../monitor/molecule.yaml), every 200 steps, with committed checkpoints.
+eval_suite: {$ref: ../../monitor/molecule.yaml}
+eval_every: 200
+checkpointing: false

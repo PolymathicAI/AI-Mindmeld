@@ -1,0 +1,54 @@
+# gemma-3-4b-it's version of streams/yes-no-molecule.yaml: answer-free, under the receiver's answers.
+templates:
+- {id: yn_01, user: 'Consider the compound<SLOT:x>. {question}'}
+- {id: yn_02, user: '<SLOT:x>
+
+    {question}'}
+- {id: yn_03, user: 'Compound:<SLOT:x>
+
+    Question: {question}'}
+- {id: yn_04, user: 'About the compound<SLOT:x>: {question}'}
+- {id: yn_05, user: 'Quick yes-or-no question about<SLOT:x>: {question}'}
+- {id: yn_06, user: '{question} The compound in question is<SLOT:x>.'}
+- {id: yn_07, user: 'I''m sorting a list of compounds into categories for a review article. The current one is<SLOT:x>. {question}'}
+- {id: yn_08, user: 'Given the embedding<SLOT:x>: {question}'}
+- {id: yn_09, user: '{question} Compound:<SLOT:x>'}
+- {id: yn_10, user: 'For the compound represented by<SLOT:x>: {question}'}
+- {id: yn_11, user: 'Embedding:<SLOT:x>. {question}'}
+- {id: yn_12, user: 'A compound is given as<SLOT:x>. {question}'}
+questions:
+  hydroxides: ['Is it a hydroxide?', 'Does it belong to the class of hydroxides?']
+  heterocyclic compound: ['Is it a heterocyclic compound?', 'Does it belong to the class of heterocyclic compounds?']
+  lipid: ['Is it a lipid?', 'Does it belong to the class of lipids?']
+  organonitrogen heterocyclic compound: ['Is it an organonitrogen heterocyclic compound?', 'Does it belong to the class of
+      organonitrogen heterocyclic compounds?']
+  carbohydrates and carbohydrate derivatives: ['Is it a carbohydrate or a carbohydrate derivative?', 'Does it belong to the
+      class of carbohydrates and carbohydrate derivatives?']
+  heteropolycyclic compound: ['Is it a heteropolycyclic compound?', 'Does it belong to the class of heteropolycyclic compounds?']
+  ester: ['Is it an ester?', 'Does it belong to the class of esters?']
+  monocyclic compound: ['Is it a monocyclic compound?', 'Does it belong to the class of monocyclic compounds?']
+  ether: ['Is it an ether?', 'Does it belong to the class of ethers?']
+  alcohol: ['Is it an alcohol?', 'Does it belong to the class of alcohols?']
+  benzenoid aromatic compound: ['Is it a benzenoid aromatic compound?', 'Does it belong to the class of benzenoid aromatic
+      compounds?']
+  ketone: ['Is it a ketone?', 'Does it belong to the class of ketones?']
+  organic polycyclic compound: ['Is it an organic polycyclic compound?', 'Does it belong to the class of organic polycyclic
+      compounds?']
+  amino oligosaccharide: ['Is it an amino oligosaccharide?', 'Does it belong to the class of amino oligosaccharides?']
+  salt: ['Is it a salt?', 'Does it belong to the class of salts?']
+  organic tricyclic compound: ['Is it an organic tricyclic compound?', 'Does it belong to the class of organic tricyclic compounds?']
+  lactone: ['Is it a lactone?', 'Does it belong to the class of lactones?']
+  flavonoids: ['Is it a flavonoid?', 'Does it belong to the class of flavonoids?']
+  steroid: ['Is it a steroid?', 'Does it belong to the class of steroids?']
+  carbopolycyclic compound: ['Is it a carbopolycyclic compound?', 'Does it belong to the class of carbopolycyclic compounds?']
+  peptide: ['Is it a peptide?', 'Does it belong to the class of peptides?']
+  organic fundamental parent: ['Is it an organic fundamental parent?', 'Does it belong to the class of organic fundamental
+      parents?']
+  sulfur oxoacid derivative: ['Is it a sulfur oxoacid derivative?', 'Does it belong to the class of sulfur oxoacid derivatives?']
+  chlorobenzenes: ['Is it a chlorobenzene?', 'Does it belong to the class of chlorobenzenes?']
+sampling: cluster_sqrt
+weights: {family: single_token, floor: 0.1}
+scaffold: {$ref: ../scaffold-molecule.yaml}
+context: {$ref: ../context-molecule-answer-free.yaml}
+grammar: {$ref: ../grammar-molecule.yaml}
+answer: {$ref: ../../answers/gemma-3.yaml}

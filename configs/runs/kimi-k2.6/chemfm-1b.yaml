@@ -1,0 +1,36 @@
+# The paper's Kimi K2.6 x ChemFM-1B run: the molecule domain (molecule-domain), the molecule training set and the
+# training-time monitor suite (../../monitor/molecule.yaml). Its vectors are extractions of this domain's structure
+# strings. Kept from the run on an earlier version of the molecule data (no refit, no reselection): the connector
+# (read, write layers, starting alphas), the step-0 ridge (fitted on that version's fit set and values), the mixture,
+# the optimizer, the checkpoints, the steps, the seed and the batch.
+destination: connectors/kimi-k2.6/chemfm-1b
+name: chemfm-1b-affine
+connector: {$ref: ../../connectors/kimi-k2.6/chemfm-1b.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/chemfm-1b.yaml}
+domain: {name: molecule, data: {$pin: molecule-domain}}
+# The step-0 ridge and the embeddings of the training objects and of the monitor items, pinned under the names below
+# when run.
+ridge: {name_described: {$pin: ridges/kimi-k2.6/chemfm-1b/ridge}}  # the source-floor target
+embeddings: [{$pin: embeddings/chemfm-1b/molecule-train/embeddings}, {$pin: embeddings/chemfm-1b/molecule-monitor/embeddings}]
+# The screened molecule training set of the group split, cited by pin. The
+# training embeddings cover the band-split domain's training objects (a superset of the group split's).
+training_set: {$pin: molecule-training-set/training_set}
+mixture: {$ref: ../../training/mixture-molecule.yaml}
+steps: 2000
+# The autotune's choice for all three molecule paper runs (preflight chosen_batch 85).
+batch: 85
+# This case's own micro-batch declaration: null, one `loss` call per step. It is declared here and not in a
+# shared file, so a value entered for this case moves no other run.
+micro_batch: null
+seed: 0
+device_class: 8xH200
+# W-only weight decay, lambda 2.5e-4 (../../training/optimizer.yaml).
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+# The training-time monitor suite (../../monitor/molecule.yaml): the original canon caption NLL, own and mismatched.
+# Evaluations and committed checkpoints every 200 steps.
+eval_suite: {$ref: ../../monitor/molecule.yaml}
+eval_every: 200
+# Activation checkpointing OFF, handed to the backend by the trainer.
+checkpointing: false

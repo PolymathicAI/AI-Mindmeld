@@ -1,0 +1,37 @@
+# The paper's Kimi K2.6 x MIMIC run: the protein domain (protein-domain), the protein training set and the
+# training-time monitor suite (../../monitor/protein.yaml). Its vectors are extractions of an earlier, larger version
+# of these object lists (the sequences are identical; the sets here are subsets of the lists they hold). Kept from the
+# run on that earlier version (no refit, no reselection): the connector (read, write layers, starting alphas), the
+# step-0 ridge (fitted on that version's fit set and values), the mixture, the optimizer, the checkpoints, the steps,
+# the seed and the batch.
+destination: connectors/kimi-k2.6/mimic
+name: mimic-affine
+connector: {$ref: ../../connectors/kimi-k2.6/mimic.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/mimic-mean.yaml}
+domain: {name: protein, data: {$pin: protein-domain}}
+# The step-0 ridge (source-floor target, every write layer 0..60) and the read's one extraction of the training
+# objects, the monitor items and the variants' wild-type parents, all pinned.
+ridge: {name_described: {$pin: ridges/kimi-k2.6/mimic/ridge}}
+embeddings:
+  - {$pin: embeddings/mimic/protein-train/embeddings}
+  - {$pin: embeddings/mimic/protein-monitor/embeddings}
+  - {$pin: embeddings/mimic/protein-parents/embeddings}
+training_set: {$pin: protein-training-set/training_set}
+mixture: {$ref: ../../training/mixture-protein.yaml}
+steps: 2000
+# The autotune's batch, 85.
+batch: 85
+# This case's own micro-batch declaration: null, one `loss` call per step. It is declared here and not in a
+# shared file, so a value entered for this case moves no other run.
+micro_batch: null
+seed: 0
+device_class: 8xH200
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+# The training-time monitor suite (../../monitor/protein.yaml), every 200 steps, with committed checkpoints.
+# The monitor: 300 validation proteins (held by the monitor extraction) plus 200 training-set members (held by the
+# training extraction); the train-vs-val gap is read per monitor record.
+eval_suite: {$ref: ../../monitor/protein.yaml}
+eval_every: 200
+checkpointing: false

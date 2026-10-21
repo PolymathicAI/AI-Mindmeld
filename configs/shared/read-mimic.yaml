@@ -1,0 +1,9 @@
+# The read of MIMIC for the paper: the joint residue (token) mean [mean @16 | mean @20], 1,536 + 1,536 = 3,072
+# dims, as the joint read-layer scan of layers 16 and 20 measured it. A connector / ridge `input`
+# (writes.inputs.InputSpec): one recipe, mimic-mean (residue mean at every EVA layer), its layers 16 and 20
+# concatenated per object; no appended extraction. One home for one choice: the connectors (connectors/*/mimic.yaml),
+# the prep ridges (ridges/*/mimic.yaml) and the layer-selection held-out scan ridge and study on the source-floor
+# target definition cite it by $ref.
+recipe: mimic-mean
+layers: [16, 20]
+combine: concat

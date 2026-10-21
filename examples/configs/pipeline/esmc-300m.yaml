@@ -1,0 +1,12 @@
+# Encoder recipe: ESM-C 300M (public), its final post-LayerNorm layer (30 blocks -> hidden_states index 30),
+# mean-pooled over residues (latent_interconnect.encoders.recipes.EncoderRecipe).
+name: esmc-300m
+extractor: esmc
+domain: protein
+model_id: biohub/ESMC-300M
+revision: e4bac860f0c502cd80f3aeac3d0ce6524c6627cb
+read: [30]
+pooling: mean
+environment: esmc          # run by the ESM-C environment's interpreter: --option python=<that env>/bin/python
+batch_tokens: 8192
+options: {max_residues: 2046}

@@ -1,0 +1,5 @@
+# The read layers of pglm-1b: [24], the read layer chosen from the read-layer scan. One home for one choice: the
+# recipe's read (encoders/pglm-1b.yaml), the connectors' input.layers (connectors/*/pglm-1b.yaml), the prep ridges'
+# input.layers (ridges/*/pglm-1b.yaml), and the layer-selection study's held-out scan ridge and injection scan cite
+# it by $ref.
+[24]

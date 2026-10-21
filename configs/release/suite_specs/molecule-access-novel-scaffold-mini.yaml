@@ -1,0 +1,21 @@
+# Release smoke suite: configs/suite_specs/gemma-3-4b-it/molecule-access-novel-scaffold.yaml with the minimal
+# eval set of the release data bundle: its domain and item set are cut to 8 objects.
+id: release/molecule-access-novel-scaffold
+kind: yes_no
+domains:
+- name: molecule
+  data: {$pin: release/molecule/chemfm-1b/domain-mini}
+item_set: {$pin: release/molecule/chemfm-1b/items-mini}
+tasks: [hydroxides, heterocyclic compound, lipid, organonitrogen heterocyclic compound, carbohydrates and carbohydrate derivatives,
+  heteropolycyclic compound, ester, monocyclic compound, ether, alcohol, benzenoid aromatic compound, ketone, organic polycyclic
+    compound, salt, organic tricyclic compound, lactone, flavonoids, steroid, carbopolycyclic compound, peptide, organic fundamental
+    parent, sulfur oxoacid derivative, chlorobenzenes]
+frame: {id: a5, user: 'Here is an unknown compound, given to you as an embedding:<SLOT:x>. {question}'}
+slots:
+- {name: x, role: object, connector: m}
+conditions:
+- {object: own}
+thinking: false
+capability: score
+params: {}
+answer: {$ref: ../../answers/gemma-3.yaml}

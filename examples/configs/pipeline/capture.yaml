@@ -1,0 +1,8 @@
+# The receiver's states at the name tokens of the "name" recipe, for the training objects (latent_interconnect.run.capture).
+destination: mine/qwen/capture
+recipe: name
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+layers: [0, 4, 8, 12, 16, 20]
+objects: {$pin: mine/items-train}
+device_class: cpu

@@ -1,0 +1,18 @@
+# gemma-3-4b-it's version of suite_specs/kimi-k2.6/protein-transfer.yaml: under the receiver's answers.
+id: protein-transfer
+kind: yes_no
+domains:
+- name: protein
+  data: {$pin: protein-domain}
+item_set: {$pin: items/protein-eval}
+tasks: [Bacillota, Metazoa, Vertebrata, Mammalia, Fungi, Length>320, Magnesium, Repeat, Coiled coil, Acetylation, Bacteria,
+  Eukaryota, Disulfide bond, Glycoprotein, Pseudomonadota, Phosphoprotein, Zinc]
+frame: {id: a5, user: 'Here is an unknown protein, given to you as an embedding:<SLOT:x>. {question}'}
+slots:
+- {name: x, role: object, connector: m}
+conditions:
+- {object: own}
+thinking: false
+capability: score
+params: {}
+answer: {$ref: ../../answers/gemma-3.yaml}

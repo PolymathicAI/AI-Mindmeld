@@ -1,0 +1,16 @@
+# Extension path 1: a connector using the third-party kind from examples/gated_kind.py, loaded through `plugins`.
+name: example-gated
+receiver: tiny-llama
+input: {recipe: example-kmer}
+tokens:
+  - {target: name}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+    - [1, 2, 3]
+kind: example-gated
+kind_params: {hidden: 8}
+alpha: {first: 1.0, init: 0.4}
+plugins: [examples.gated_kind]
+layer_choice: {note: "example only"}

@@ -1,0 +1,21 @@
+# The layer-selection study: the held-out scan ridge's predictions written at one layer at a time, Yes/No scored on
+# the scan items (latent_interconnect.run.study), read next to scan-reference.yaml (examples/guides/choosing_layers.md §2).
+destination: mine/qwen/study
+name: qwen/esmc-300m-layers
+injection:
+  receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+  domain: {name: protein, data: {$pin: mine/protein-domain}}
+  source: ridge
+  states: {$pin: mine/qwen/ridge-heldout}
+  input: {recipe: esmc-300m-layers, layers: [30]}
+  encoder: {$ref: esmc-300m-layers.yaml}
+  embeddings: [{$pin: mine/esmc-300m-layers/embeddings}]
+  item_set: {$pin: mine/items-scan}
+  tasks: [DNA-binding, Membrane, Transferase, Mammalia]
+  frame: a5
+  slot: x
+  answers: {"yes": "Yes", "no": "No"}  # quoted keys: YAML 1.1 reads bare yes/no as booleans; one token each
+  layers: [0, 4, 8, 12, 16, 20]
+  alpha: 1.0
+  layers_per_call: 6
+device_class: cpu

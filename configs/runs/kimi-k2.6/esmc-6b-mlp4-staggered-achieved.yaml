@@ -1,0 +1,8 @@
+# The publication of the stopped ESM-C 6B four-token MLP run (run.achieved): the achieved checkpoints and log of
+# esmc-6b-mlp4-staggered.yaml (its run directory, named by that config's digest), without a fit, on CPU, as a
+# record of its own (kind achieved), pinned under connectors/kimi-k2.6/esmc-6b-mlp4-staggered. A later completion of
+# the run pins under the run's own destination, connectors/kimi-k2.6/esmc-6b-mlp4-staggered-training, and never moves
+# these pins. Run it only once every job of the run has ended.
+destination: connectors/kimi-k2.6/esmc-6b-mlp4-staggered
+run: {$ref: esmc-6b-mlp4-staggered.yaml}
+device_class: cpu

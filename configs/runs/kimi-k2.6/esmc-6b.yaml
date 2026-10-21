@@ -1,0 +1,34 @@
+# The ordinary ESM-C 6B run of Fig 7: esmc-600m.yaml beside this file with the connector, the encoder, the step-0
+# ridge and the embeddings changed and nothing else (the recipe: 1x LR, batch 85, 2,000 steps, the data,
+# mixture, optimizer, checkpoints, training-time monitor and seed are the 600M run's). Connector:
+# ../../connectors/kimi-k2.6/esmc-6b.yaml (read [51 | 80], with its own write layers and starting alphas). Step-0
+# ridge: the [51 | 80] name_described fit with the source-floor target (record a45bff13). Embeddings: the ESM-C 6B
+# [51 | 80] extractions of the training objects, monitor items and wild-type parents (records b5546569, 5e013620,
+# 8500e427), keyed on the same object sets as the 600M ones. Batch 85 was required to fit below a peak memory fraction
+# of 0.92. Destinations under connectors/kimi-k2.6/esmc-6b/: a separate cell, outside the paper connectors that the
+# coverage tables expand over, so no aggregate or row moves.
+destination: connectors/kimi-k2.6/esmc-6b
+name: esmc-6b-affine
+connector: {$ref: ../../connectors/kimi-k2.6/esmc-6b.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/esmc-6b-l51l80.yaml}
+domain: {name: protein, data: {$pin: protein-domain}}
+ridge: {name_described: {$pin: ridges/kimi-k2.6/esmc-6b}}
+embeddings:
+  - {$pin: embeddings/esmc-6b/protein-train}
+  - {$pin: embeddings/esmc-6b/protein-monitor}
+  - {$pin: embeddings/esmc-6b/protein-parents}
+training_set: {$pin: protein-training-set/training_set}
+mixture: {$ref: ../../training/mixture-protein.yaml}
+steps: 2000
+batch: 85
+# This case's own micro-batch declaration: null, one `loss` call per step, as the 600M run.
+micro_batch: null
+seed: 0
+device_class: 8xH200
+# W-only weight decay, lambda 2.5e-4; lr_rel 0.002 (1x).
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+eval_suite: {$ref: ../../monitor/protein.yaml}
+eval_every: 200
+checkpointing: false

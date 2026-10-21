@@ -1,0 +1,26 @@
+# gemma-3-4b-it's version of runs/kimi-k2.6/esmc-600m.yaml.
+destination: connectors/gemma-3-4b-it/esmc-600m
+name: esmc-600m-affine
+connector: {$ref: ../../connectors/gemma-3-4b-it/esmc-600m.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+encoder: {$ref: ../../encoders/esmc-600m.yaml}
+domain:
+  name: protein
+  data: {$pin: protein-domain}
+ridge:
+  name_described: {$pin: ridges/gemma-3-4b-it/esmc-600m/ridge}
+embeddings:
+- {$pin: embeddings/esmc-600m/protein-train/embeddings}
+- {$pin: embeddings/esmc-600m/protein-monitor/embeddings}
+- {$pin: embeddings/esmc-600m/protein-parents/embeddings}
+training_set: {$pin: protein-training-set/training_set}
+mixture: {$ref: ../../training/gemma-3-4b-it/mixture-protein.yaml}
+steps: 2000
+batch: 85
+micro_batch: 16
+seed: 0
+device_class: A100
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+eval_suite: {$ref: ../../monitor/protein.yaml}
+eval_every: 200

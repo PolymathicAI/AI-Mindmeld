@@ -1,0 +1,17 @@
+# ESM-C 6B at the read layers [51, 80] of the ESM-C 6B multi-token runs, extracted by this package: the input of
+# these runs, per-residue (bf16) and pooled. The read scan picked the 6B read,
+# the joint token mean [51|80] (the pooled states of layers 51 and 80, concatenated: 5,120).
+name: esmc-6b-l51l80
+extractor: esmc
+domain: protein
+model_id: biohub/ESMC-6B
+revision: af1602ba7406f521b11bf8f81d52af378cde09e4   # the revision of the read-layer scan
+read: {$ref: ../shared/read-esmc-6b.yaml}
+pooling: mean
+residues: true
+residue_dtype: bf16
+environment: esmc
+options: {max_residues: 2046}   # the paper's window: the 2,048-token context minus <cls> and <eos>
+# The read-layer scan's padded-token budget on an A100-80GB. Kept residues leave the GPU per batch (host memory),
+# so they add no device memory.
+batch_tokens: 16384

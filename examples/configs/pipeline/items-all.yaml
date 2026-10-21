@@ -1,0 +1,8 @@
+# Item set: all objects (size) of the domain's [train, val, test] split(s), as whole clusters (latent_interconnect.build.item_selection).
+destination: mine/items-all
+name: mine/all
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+splits: [train, val, test]
+max_length: null
+size: 32
+seed: 0

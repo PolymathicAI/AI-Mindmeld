@@ -1,0 +1,10 @@
+# The setup's layer-selection records, checked to be one setup's and typed for reading
+# (latent_interconnect.run.analysis; evaluation.layer_selection_analysis).
+destination: mine/qwen/layer-selection
+id: mine/qwen/layer-selection
+kind: layer_selection
+inputs:
+  study: {$pin: mine/qwen/study@record}
+  oracle: {$pin: mine/qwen/scan-reference@record}
+  ridge: {$pin: mine/qwen/ridge-heldout@record}
+  read_scan: {$pin: mine/esmc-300m-layers/read-scan@record}

@@ -1,0 +1,8 @@
+# The read layers of esmc-6b: [51, 80], token mean at each, concatenated (the citing inputs' combine: concat;
+# 2,560 + 2,560 = 5,120 dims): the ESM-C 6B read best overall on property and variants (P .9385, clinical .8600,
+# functional .8407; vs [51|78] P -.0025, clinical +.020, functional equal), as the joint read-layer scan measured it.
+# As shared/read-esmc-600m.yaml: one home for one choice; the layer-selection held-out ridge and study on the
+# source-floor target definition cite it by $ref. The ESM-C 6B multi-token runs use this read: their recipe
+# (encoders/esmc-6b-l51l80.yaml), connectors (connectors/*/esmc-6b.yaml), runs
+# (runs/kimi-k2.6/esmc-6b-mlp4-staggered.yaml) and ridges (ridges/*/esmc-6b.yaml) cite it too.
+[51, 80]

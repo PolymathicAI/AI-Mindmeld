@@ -1,0 +1,11 @@
+# The Yes/No answer convention of Kimi K2.6 (one answer format per LLM): the instruction and the bare answer
+# words its scans read after the empty thinking block. With the pinned tokenizer 7eb5002f, "Yes" = 14104 and
+# "No" = 4729 after "</think>". Cited by the relational streams (their Yes/No-led rows, whose instruction is the stream
+# config's own `instruction`) and the mutation suites, except the binary seen ones, which
+# ask in the variant training stream's own wording, the checkpoint's training prompt. Kimi's other configs keep their
+# route-specific inline prompts rather than this file: each route's wording differs from this convention, while its
+# answer position and read tokens are the same.
+instruction: "Answer Yes or No."
+prefix: ""
+"yes": "Yes"   # quoted: YAML 1.1 reads bare yes / no as booleans
+"no": "No"

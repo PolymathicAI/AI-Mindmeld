@@ -1,0 +1,27 @@
+# The paper's ESM-C 600M connector with its chosen read. The architecture stays the paper connector's (one token, a
+# layer-0 constant, an affine map). Read: the token mean [33 | 36], 2,304 dims (configs/shared/read-esmc-600m.yaml).
+# Write: layers 7, 13, 22, 33, 49, 58 plus the layer-0 constant, object-independent: one shared layer set for
+# Kimi K2.6's protein connectors. The one token's init target is the description-primed name state.
+name: esmc-600m-affine
+receiver: kimi-k2.6
+input: {recipe: esmc-600m, layers: {$ref: ../../shared/read-esmc-600m.yaml}, combine: concat}
+tokens:
+  - {target: name_described}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+    - [7, 13, 22, 33, 49, 58]
+kind: affine
+# Alpha: every write-layer alpha, the first included, learned (sigmoid), no budget; the layer-0 constant
+# stays at alpha 1. Each starts at its per_layer value below, in place of the default 0.5.
+# Starting alphas: the clipped AUROC-weighted candidate H_auroc_weighted_clipped (AUROC-weighted, clipped to
+# [0.1, 0.9]), the rule of every connector, Kimi's included; exploratory, selected on the same items it was
+# scored on; scored in the scan record df7b8385.
+alpha: {first: null, init: 0.5, learned: true, budget: null, per_layer: {7: 0.9, 13: 0.9, 22: 0.464483, 33: 0.1, 49: 0.1, 58: 0.283286}}
+seed: 0
+layer_choice:
+  decisions: []
+  note: "the paper's architecture; the chosen read; the shared Kimi protein write layers 7/13/22/33/49/58, chosen
+    from the 19-connector ridge-write comparison (see examples/guides/choosing_layers.md); layer 0 writes only the
+    object-independent constant"

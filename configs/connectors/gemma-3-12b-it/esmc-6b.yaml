@@ -1,0 +1,29 @@
+# gemma-3-12b-it's version of connectors/kimi-k2.6/esmc-6b.yaml, with its own write layers and declared starting alphas.
+name: esmc-6b-affine
+receiver: gemma-3-12b-it
+input:
+  recipe: esmc-6b-l51l80
+  layers: {$ref: ../../shared/read-esmc-6b.yaml}
+  combine: concat
+tokens:
+- {target: name_described}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+  - [6, 11, 16, 23, 33, 44]
+kind: affine
+alpha:
+  first: null
+  init: 0.5
+  learned: true
+  budget: null
+  per_layer: {6: 0.704073, 11: 0.9, 16: 0.634983, 23: 0.339792, 33: 0.199957, 44: 0.1}
+seed: 0
+layer_choice:
+  records: [512ec9e5e70b1553a98fad8ed721681294f1f0c0ac17e37bc02489ec33de6a81, 4cdef50e68321d92d2dee3032fe8a2b6502452c5b7696316f0659246b65d2693,
+    83bab4a67a88971b73896182f02b4a904916432311e8332f41061bdeb4a760a8, 80c73b19441dd1c9ed8ebee970665852c586722b8093b808fe62cde16b8075ac]
+  decisions: []
+  note: 'the shared gemma-3-12b-it protein write layers: 6/11/16/23/33/44 plus the layer-0 constant (bias only),
+    chosen from the 19-connector ridge-write comparison under the full-depth upper-envelope criterion
+    (see examples/guides/choosing_layers.md); target MEAN, layer-matched'

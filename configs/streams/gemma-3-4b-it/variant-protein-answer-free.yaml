@@ -1,0 +1,52 @@
+# gemma-3-4b-it's version of streams/variant-protein.yaml: answer-free, under the receiver's answers.
+table: variants
+templates:
+- {id: veff_01, kind: effect, user: 'Here is a mutant protein, given to you as an embedding:<SLOT:x>. What is the effect of
+    its mutation?'}
+- {id: veff_02, kind: effect, user: 'What is the effect of the amino-acid substitution in the protein variant<SLOT:x>?'}
+- {id: veff_03, kind: effect, user: 'Consider the protein variant<SLOT:x>. It carries a single amino-acid substitution. Describe
+    the effect of this substitution.'}
+- {id: veff_04, kind: effect, user: "<SLOT:x> \u2014 this protein carries one point mutation. What does the mutation do?"}
+- {id: vcli_02, kind: clinical, user: '<SLOT:x>
+
+    Is this missense variant disease-causing?'}
+- {id: vcli_03, kind: clinical, user: 'Variant:<SLOT:x>
+
+    Question: Is this variant pathogenic?'}
+- {id: vcli_n1, kind: clinical, user: 'Is the following missense variant pathogenic?
+
+    Variant:<SLOT:x>'}
+- {id: vfun_01, kind: functional, user: 'Consider the protein variant<SLOT:x>. Does this variant lose activity?'}
+- {id: vfun_02, kind: functional, user: '<SLOT:x>
+
+    Does the mutation in this protein cause a loss of function?'}
+- {id: vfun_03, kind: functional, user: 'Protein variant:<SLOT:x>
+
+    Question: Does this mutation make the protein lose its activity?'}
+- {id: vfun_n1, kind: functional, user: 'Does the amino-acid substitution in the following variant make the protein lose its
+    function?
+
+    Variant:<SLOT:x>'}
+- {id: vrel_01, kind: relational, user: 'Here are two proteins, given to you as embeddings: the first<SLOT:w> is the wild
+    type and the second<SLOT:x> carries a single amino-acid substitution. How does the second protein differ from the first?'}
+- {id: vrel_02, kind: relational, user: 'Protein 1:<SLOT:w>
+
+    Protein 2:<SLOT:x>
+
+    Protein 2 is a point mutant of protein 1. What is the effect of the mutation?'}
+- {id: vrel_n1, kind: relational, user: '<SLOT:w> is a wild-type protein, and<SLOT:x> is the same protein with a single amino-acid
+    substitution. What effect does the substitution have?'}
+- {id: vrel_n2, kind: relational, user: 'What is the effect of the point mutation that separates the wild-type protein<SLOT:w>
+    from its mutant<SLOT:x>?'}
+kinds: {effect: 0.3, clinical: 0.35, functional: 0.2, relational: 0.15}
+effect_field: variant_effect
+labels: {clinical: 'variant:clinical', functional: 'variant:functional'}
+max_target_tokens: 48
+weights:
+  effect: {family: power, floor: 0.1, tau: 0.001, p: 1.2411, multiplier: 3.0}
+  clinical: {family: single_token, floor: 0.1, multiplier: 4.0}
+  functional: {family: single_token, floor: 0.1, multiplier: 3.0}
+  relational: {family: power, floor: 0.1, tau: 0.001, p: 1.2411, multiplier: 3.0}
+pair_frac: 0.8
+pair_kinds: [clinical]
+answer: {$ref: ../../answers/gemma-3.yaml}

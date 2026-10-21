@@ -1,0 +1,10 @@
+# Receiver: Qwen2.5-0.5B-Instruct (public) through the generic Hugging Face backend; each field is explained in
+# examples/configs/llama-receiver.yaml. 24 decoder layers of width 896; " X" is one token in its tokenizer.
+name: qwen2.5-0.5b-instruct
+model_id: Qwen/Qwen2.5-0.5B-Instruct
+revision: 7ae557604adf67be50417f59c2c2f167def9a775
+depth: 24
+d_model: 896
+placeholder: " X"
+layers_path: model.layers
+backends: {score: hf, train: hf, generate: hf, capture: hf}

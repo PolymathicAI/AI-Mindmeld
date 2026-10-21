@@ -1,0 +1,7 @@
+# The read layers of chemfm-1b: [17], the read chosen from the read-layer scan: the recipe's pooling last+mean (the
+# last SMILES token's state concatenated with the token mean, the token first) at layer 17, 2,048 + 2,048 = 4,096
+# dims, as the read-layer scan measured it (its stored vector at 17, whole). One home for one choice: the recipe's
+# read (encoders/chemfm-1b.yaml), the connectors' input.layers (connectors/*/chemfm-1b.yaml) and the prep ridges'
+# input.layers (ridges/*/chemfm-1b.yaml) cite it by $ref, as do the layer-selection study's held-out scan ridge and
+# injection scan.
+[17]

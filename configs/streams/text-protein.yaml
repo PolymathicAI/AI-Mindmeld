@@ -1,0 +1,295 @@
+# The original protein runs' single-protein text stream (data.qa_streams.TextParams): the original protein runs'
+# train templates, the object draw cluster_sqrt, the answer cap 48 tokens, the loss curves of the original loss
+# weights per format (copied here per task) with their
+# ';'-segment head boost, the protein scaffold (scaffold-protein.yaml) and the protein in-context examples
+# (context-protein.yaml). Only split "train" templates; <SLOT> is <SLOT:x> at the template's own position. Each
+# template cites its original qtype as the trained text task of the original protein domain, whose label is the
+# template's target field: describe and function -> function; family -> similarity; location -> subcellular_location;
+# subunit; catalytic -> catalytic_activity; pathway; ec.
+# Half the rows are worded by the prompt grammar with the target wording (grammar-protein.yaml, rate 0.5);
+# with it every template binds <SLOT:x>.
+templates:
+- id: desc_01
+  task: describe
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. Describe what this protein is and what it does.
+- id: desc_02
+  task: describe
+  user: <SLOT:x> — describe this protein.
+- id: desc_03
+  task: describe
+  user: Tell me about the protein<SLOT:x>.
+- id: desc_04
+  task: describe
+  user: Describe the protein encoded by the embedding<SLOT:x>.
+- id: desc_05
+  task: describe
+  user: What is<SLOT:x>? Give a short description of the protein.
+- id: desc_06
+  task: describe
+  user: Hi! I have a protein represented by this embedding:<SLOT:x>. Could you tell me what kind of protein it is and what
+    it does?
+- id: desc_07
+  task: describe
+  user: 'Protein:<SLOT:x>
+
+    Description:'
+- id: desc_08
+  task: describe
+  user: I am annotating a batch of newly sequenced proteins for a database. The next protein on my list is<SLOT:x>, and it
+    has no annotation yet. Please write a brief description of what it is and what it does.
+- id: desc_09
+  task: describe
+  user: Provide a concise functional annotation, in the style of a UniProt entry, for the protein<SLOT:x>.
+- id: desc_10
+  task: describe
+  user: The embedding token<SLOT:x> stands for a protein. Summarize what this protein is and what it does.
+- id: desc_11
+  task: describe
+  user: Explain in one or two sentences what the protein<SLOT:x> is and what it does.
+- id: desc_12
+  task: describe
+  user: 'Here is a protein embedding:<SLOT:x>
+
+    Write its UniProt-style description.'
+- id: func_01
+  task: function
+  user: What does the protein<SLOT:x> do?
+- id: func_02
+  task: function
+  user: What is the function of<SLOT:x>?
+- id: func_03
+  task: function
+  user: 'Function of protein<SLOT:x>:'
+- id: func_04
+  task: function
+  user: <SLOT:x> is a protein. What is its biological role?
+- id: func_05
+  task: function
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. What is its function?
+- id: func_06
+  task: function
+  user: Describe the molecular function of the protein represented by<SLOT:x>.
+- id: func_07
+  task: function
+  user: 'Quick question: what''s the job of<SLOT:x> in the cell?'
+- id: func_08
+  task: function
+  user: Given the embedding<SLOT:x>, state the protein's function as it would appear in the FUNCTION section of a UniProt
+    entry.
+- id: func_09
+  task: function
+  user: While going through a proteomics dataset, a student flagged the protein<SLOT:x> as interesting but could not find
+    out what it does. Explain its function.
+- id: func_10
+  task: function
+  user: In which biological process is<SLOT:x> involved, and what does it do there?
+- id: func_11
+  task: function
+  user: 'Protein embedding:<SLOT:x>. Task: describe its function.'
+- id: func_12
+  task: function
+  user: What role does the protein given by the embedding<SLOT:x> play?
+- id: fam_01
+  task: family
+  user: Which protein family does<SLOT:x> belong to?
+- id: fam_02
+  task: family
+  user: 'Protein family of<SLOT:x>:'
+- id: fam_03
+  task: family
+  user: <SLOT:x> belongs to which family?
+- id: fam_04
+  task: family
+  user: To what family of proteins does the embedding<SLOT:x> correspond?
+- id: fam_05
+  task: family
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. What family is it a member of?
+- id: fam_06
+  task: family
+  user: Classify the protein<SLOT:x> into its protein family.
+- id: fam_07
+  task: family
+  user: Any idea what family<SLOT:x> is from?
+- id: fam_08
+  task: family
+  user: Give the sequence-similarity family of<SLOT:x>, as stated in UniProt.
+- id: fam_09
+  task: family
+  user: We are building a phylogenetic tree and need to know where each protein fits. For the protein<SLOT:x>, which family
+    should it be grouped with?
+- id: fam_10
+  task: family
+  user: Family assignment for protein<SLOT:x>?
+- id: fam_11
+  task: family
+  user: What is the protein family of the protein encoded as<SLOT:x>?
+- id: loc_01
+  task: location
+  user: Where in the cell is<SLOT:x> located?
+- id: loc_02
+  task: location
+  user: 'Subcellular location of<SLOT:x>:'
+- id: loc_03
+  task: location
+  user: <SLOT:x> — where is it found in the cell?
+- id: loc_04
+  task: location
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. In which cellular compartment is it found?
+- id: loc_05
+  task: location
+  user: In which compartment of the cell does the protein<SLOT:x> reside?
+- id: loc_06
+  task: location
+  user: Where would I find<SLOT:x> if I looked inside a cell?
+- id: loc_07
+  task: location
+  user: State the subcellular localization of the protein represented by<SLOT:x>.
+- id: loc_08
+  task: location
+  user: For an imaging experiment we plan to tag the protein<SLOT:x> with GFP. Where in the cell should we expect to see the
+    signal?
+- id: loc_09
+  task: location
+  user: Localization of protein<SLOT:x>?
+- id: loc_10
+  task: location
+  user: Is<SLOT:x> cytoplasmic, membrane-bound, secreted, or somewhere else? Give its subcellular location.
+- id: loc_11
+  task: location
+  user: 'Protein:<SLOT:x>
+
+    Subcellular location:'
+- id: sub_01
+  task: subunit
+  user: What complexes does<SLOT:x> form, and what does it interact with?
+- id: sub_02
+  task: subunit
+  user: 'Subunit structure of<SLOT:x>:'
+- id: sub_03
+  task: subunit
+  user: <SLOT:x> — does it act alone or as part of a complex?
+- id: sub_04
+  task: subunit
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. Describe its quaternary structure and interaction
+    partners.
+- id: sub_05
+  task: subunit
+  user: Which proteins does<SLOT:x> interact with?
+- id: sub_06
+  task: subunit
+  user: Describe the oligomeric state and binding partners of the protein<SLOT:x>.
+- id: sub_07
+  task: subunit
+  user: Does<SLOT:x> work by itself, or does it team up with other proteins?
+- id: sub_08
+  task: subunit
+  user: A pull-down experiment used the protein<SLOT:x> as bait. Which partners or complexes would you expect it to bring
+    down?
+- id: sub_09
+  task: subunit
+  user: 'Protein:<SLOT:x>
+
+    Subunit structure:'
+- id: cat_01
+  task: catalytic
+  user: What reaction does<SLOT:x> catalyze?
+- id: cat_02
+  task: catalytic
+  user: 'Catalytic activity of<SLOT:x>:'
+- id: cat_03
+  task: catalytic
+  user: <SLOT:x> is an enzyme. Write the reaction it catalyzes.
+- id: cat_04
+  task: catalytic
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. Give the chemical reaction it catalyzes.
+- id: cat_05
+  task: catalytic
+  user: Write the reaction catalyzed by the enzyme<SLOT:x>.
+- id: cat_06
+  task: catalytic
+  user: We purified the enzyme<SLOT:x> and want to set up an activity assay. Which reaction should we monitor?
+- id: cat_07
+  task: catalytic
+  user: 'Enzyme:<SLOT:x>
+
+    Reaction:'
+- id: cat_08
+  task: catalytic
+  user: Which substrates does<SLOT:x> convert, and into what products? Answer with the reaction.
+- id: path_01
+  task: pathway
+  user: Which metabolic pathway is<SLOT:x> part of?
+- id: path_02
+  task: pathway
+  user: 'Pathway of<SLOT:x>:'
+- id: path_03
+  task: pathway
+  user: <SLOT:x> — which pathway does it participate in?
+- id: path_04
+  task: pathway
+  user: Here is an unknown protein, given to you as an embedding:<SLOT:x>. In which pathway does it act?
+- id: path_05
+  task: pathway
+  user: To reconstruct the metabolism of a newly sequenced organism, we need pathway assignments. For the protein<SLOT:x>,
+    which pathway and step does it belong to?
+- id: path_06
+  task: pathway
+  user: 'Protein:<SLOT:x>
+
+    Pathway:'
+- id: ec_01
+  task: ec
+  user: What is the EC number of the enzyme<SLOT:x>?
+- id: ec_02
+  task: ec
+  user: '<SLOT:x>
+
+    Give the EC number of this enzyme.'
+- id: ec_03
+  task: ec
+  user: Consider the enzyme<SLOT:x>. Which EC number describes the reaction it catalyzes?
+sampling: cluster_sqrt
+max_target_tokens: 48
+weights:
+  catalytic:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.5232
+  describe:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.211
+  ec:
+    family: flat
+    floor: 0.1
+  family:
+    family: flat
+    floor: 0.1
+  function:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.2411
+  location:
+    family: exp
+    floor: 0.1
+    tau: 0.7758
+  pathway:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.608
+  subunit:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 0.9504
+segment_boost:   # the original loss weights' segment head boost r_f (template rows answer with the field text)
+  pathway: 0.2109
+  catalytic: 0.1647
+segment_boost_formats: [none, verbatim, source, reaction_sentence]   # the original loss weights' answer formats; all template rows
+scaffold: {$ref: scaffold-protein.yaml}
+context: {$ref: context-protein.yaml}
+grammar: {$ref: grammar-protein.yaml}

@@ -1,0 +1,14 @@
+# The paper runs' optimizer, with a little weight decay.
+# weight_decay is OptimizerSpec's per-step relative rate λ: each update scales every decayed tensor (affine's W, a
+# stream kind's output map) by 1 - factor(step)·λ, whatever its learning rate; b, the layer-0 constant and the α logits
+# are not decayed. λ = 2.5e-4 is for the 2,000-step paper runs (Σ factor 1990.5): an unopposed W (no gradient holding
+# it) ends at 0.61 of its value. A run of a different length takes the same total shrink with
+# λ = 2.5e-4 × 2000 / its expected realized steps, in its own optimizer settings
+# (the ESM-C 6B multi-token runs: ~4-5k realized steps within their time limit, not the 20,000 ceiling; set from
+# the measured step time, ~1.1e-4 at 4,500).
+lr_rel: 0.002
+lr_alpha: 0.01
+warmup_steps: 20
+schedule: constant
+weight_decay: 2.5e-4
+clip: 1.0

@@ -1,0 +1,12 @@
+# Ridge maps from the ESM-C 300M embedding to the captured name states, per receiver layer (latent_interconnect.run.ridge).
+destination: mine/qwen/ridge
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+input: {recipe: esmc-300m, layers: [30]}
+encoder: {$ref: esmc-300m.yaml}
+embeddings: [{$pin: mine/esmc-300m/embeddings}]
+targets: {$pin: mine/qwen/capture}
+target: name
+layers: [0, 4, 8, 12, 16, 20]
+fit_set: {$pin: mine/items-train}
+alphas: [1.0, 10.0, 100.0, 1000.0]
+folds: 2

@@ -1,0 +1,10 @@
+# A random 4-layer Llama for the CPU tests. model_id is a placeholder: the test fixture (tests/fakes.py) saves a random
+# model and tokenizer into a local directory and loads a copy of this config with model_id set to that directory, so
+# backends, the renderer and `python -m` entry points load it like any model. Every capability uses the generic backend.
+name: tiny-llama
+model_id: lip-test/tiny-llama
+revision: random-seed-0
+depth: 4
+d_model: 64
+placeholder: " X"
+backends: {score: hf, train: hf, generate: hf, capture: hf}

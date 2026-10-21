@@ -1,0 +1,9 @@
+# kimi-k2.6's molecule-access-novel-scaffold suite for the chemfm-1b connector at step 2000, on the paper's data.
+destination: connectors/kimi-k2.6/chemfm-1b/molecule-access-novel-scaffold/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/molecule-access-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/chemfm-1b/step_002000}}
+inputs: {m: [{$pin: embeddings/chemfm-1b/molecule-eval-novel-scaffold}]}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

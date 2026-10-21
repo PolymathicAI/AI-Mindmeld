@@ -1,0 +1,160 @@
+# The original protein runs' relational stream (data.relational_stream.RelationalParams), with pathway and EC-number
+# sets, as the original protein runs set it: all relational families under task split R (cofactor, GO, length and
+# lineage blocked, so length_compare and taxonomy_compare drop and no answer states a cofactor or GO term),
+# hard-negative rate 0.5, long-answer cap 96 tokens, cluster_sqrt draws; the original generator's prompts
+# (<SLOTk> -> <SLOT:pk>); fact_curves from the original loss weights' "relational" entry (the
+# single-protein format per fact kind; verdict words at the floor = null), each with its curve. Prompts marked "new"
+# are not the original's: every family has at least 3 wordings with the slots at 3 positions.
+answers: protein   # the protein records, answer templates and draws (data.relational_stream.PROTEIN)
+families:
+  profile:
+  - family
+  - location
+  - function
+  - pathway
+  enzyme:
+  - ec
+  - catalytic_activity
+  same_family:
+  - family
+  compare_location:
+  - location
+  differences:
+  - family
+  - location
+  - ec
+  - pathway
+  commonalities:
+  - family
+  - location
+  - ec
+  - pathway
+  ec_depth:
+  - ec
+  pathway_relation:
+  - pathway
+  odd_one_out_family:
+  - family
+  odd_one_out_location:
+  - location
+prompts:
+  profile:
+  - 'Give a short profile of the protein<SLOT:p1>: its family, where it is found and what it does.'
+  - Summarize what is known about<SLOT:p1> in a few sentences.
+  - <SLOT:p1> — describe its family, localization and function.
+  - Write a brief annotation for the protein<SLOT:p1>.
+  - What kind of protein is<SLOT:p1>, where does it act, and what does it do?
+  enzyme:
+  - What kind of enzyme is<SLOT:p1>, and which reaction does it catalyze?
+  - Classify the enzyme<SLOT:p1> and describe its reaction.
+  - <SLOT:p1> is an enzyme. What is its EC class and what does it do?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slot last
+  - Name the enzyme class and the reaction catalyzed by the protein<SLOT:p1>.
+  same_family:
+  - Do the proteins<SLOT:p1> and<SLOT:p2> belong to the same family? Explain.
+  - Are<SLOT:p1> and<SLOT:p2> members of one protein family?
+  - Is<SLOT:p1> in the same family as<SLOT:p2>? Answer and say which family or families.
+  - Here are two proteins,<SLOT:p1> and<SLOT:p2>. Are they related by family?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - <SLOT:p1> and<SLOT:p2> — do these two proteins come from the same protein family? Explain your answer.
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots last
+  - Do the following two proteins belong to the same family, and which family is each in:<SLOT:p1> and<SLOT:p2>?
+  compare_location:
+  - Where are<SLOT:p1> and<SLOT:p2> found in the cell? Compare them.
+  - Compare the subcellular localization of<SLOT:p1> and<SLOT:p2>.
+  - Do<SLOT:p1> and<SLOT:p2> localize to the same compartment?
+  - Compare where<SLOT:p1> and<SLOT:p2> are found in the cell.
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> and<SLOT:p2>: where in the cell is each of these proteins found, and do their locations overlap?'
+  differences:
+  - How do the proteins<SLOT:p1> and<SLOT:p2> differ?
+  - What are the main differences between<SLOT:p1> and<SLOT:p2>?
+  - Contrast<SLOT:p1> with<SLOT:p2>.
+  - Consider the proteins<SLOT:p1> and<SLOT:p2>. In what ways are they different?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> versus<SLOT:p2>: what are the main differences between these two proteins?'
+  commonalities:
+  - What do the proteins<SLOT:p1> and<SLOT:p2> have in common?
+  - How are<SLOT:p1> and<SLOT:p2> similar?
+  - Name the similarities between<SLOT:p1> and<SLOT:p2>.
+  - Two proteins are given:<SLOT:p1> and<SLOT:p2>. What do they share?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> and<SLOT:p2>: what do these two proteins have in common?'
+  ec_depth:
+  - Both<SLOT:p1> and<SLOT:p2> are enzymes. How closely related are their EC classifications?
+  - Compare the enzyme classes of<SLOT:p1> and<SLOT:p2>.
+  - Do<SLOT:p1> and<SLOT:p2> catalyze the same kind of reaction? Answer in terms of EC numbers.
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - <SLOT:p1> and<SLOT:p2> are both enzymes. How many levels of their EC numbers do they share?
+  pathway_relation:
+  - Do<SLOT:p1> and<SLOT:p2> take part in the same metabolic pathway?
+  - Compare the pathways of<SLOT:p1> and<SLOT:p2>.
+  - How are<SLOT:p1> and<SLOT:p2> related metabolically?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> and<SLOT:p2>: do they act in the same metabolic pathway, in related pathways, or in unrelated ones?'
+  odd_one_out_family:
+  - Which of<SLOT:p1>,<SLOT:p2> and<SLOT:p3> is the odd one out by protein family, and why?
+  - Three proteins:<SLOT:p1>,<SLOT:p2>,<SLOT:p3>. Two share a family. Which one does not?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - <SLOT:p1>,<SLOT:p2> and<SLOT:p3> are three proteins, two of which share a protein family. Which one is the odd one
+    out?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots last
+  - Which of these three proteins falls outside the family the other two share:<SLOT:p1>,<SLOT:p2> or<SLOT:p3>?
+  odd_one_out_location:
+  - Which of<SLOT:p1>,<SLOT:p2> and<SLOT:p3> localizes differently from the other two?
+  - Among<SLOT:p1>,<SLOT:p2> and<SLOT:p3>, which one is found in a different part of the cell?
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1>,<SLOT:p2>,<SLOT:p3>: which of these proteins is found in a different part of the cell from the other
+    two?'
+  # new (not the original's; >= 3 wordings, >= 3 slot positions): the slots last
+  - Two of these three proteins share a subcellular location. Which one is found elsewhere:<SLOT:p1>,<SLOT:p2>
+    or<SLOT:p3>?
+fields:
+  family: protein_families
+  location: subcellular_location
+  function: function
+  pathway: pathway
+  ec: ec
+  catalytic_activity: catalytic_activity
+sampling: cluster_sqrt
+p_hard: 0.5
+max_target_tokens: 96
+floor: 0.1
+fact_curves:
+  family: &id001
+    family: flat
+    floor: 0.1
+  superfamily: *id001
+  location: &id002
+    family: exp
+    floor: 0.1
+    tau: 0.7758
+  topology: *id002
+  function:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.2411
+  pathway: &id003
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.608
+  category: *id003
+  step: *id003
+  ec_number: &id004
+    family: flat
+    floor: 0.1
+  ec_class: *id004
+  catalytic:
+    family: power
+    floor: 0.1
+    tau: 0.001
+    p: 1.5232
+  choice:
+    family: single_token
+    floor: 0.1
+  verdict: null
+grammar: {$ref: grammar-protein.yaml}   # a lead and a system role on half the prompts
+answer: {$ref: ../answers/kimi-k2.6.yaml}   # same_* rows asked answer-first
+instruction: Answer Yes or No, then explain.   # those rows' instruction (the convention's own is not read)

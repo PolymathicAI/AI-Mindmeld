@@ -1,0 +1,15 @@
+# MIMIC for the read-layer scan (the mean-pooled layer scan): the mean over the
+# residue positions at every EVA encoder layer, 0..20 (extractors/mimic.py): the positions after the 5 registers and
+# before the padding (EVA's modality id is not -1), one per residue (checked against each sequence's length); the
+# registers are not in it. Layer 0 is the stack's input, layer i the residual stream after block i, 20 the normed
+# output. A protein longer than EVA's tok_aa_seq limit (10,000 residues) is skipped with reason "length>10000", as the
+# paper's extraction did.
+name: mimic-mean
+extractor: mimic
+domain: protein
+model_id: 5.7_main/E20-D12-H1536-pt7-synced
+revision: 1113846c2218dbe7ddd3e341d5234b2e8fed87fd74296ebf57675b03ad46bb31   # sha256 of checkpoint-final.pth
+read: all
+pooling: mean
+environment: cd-xl-central
+batch_tokens: 32768       # the register scan recipe's

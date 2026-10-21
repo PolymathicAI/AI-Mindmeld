@@ -1,0 +1,13 @@
+# Release smoke run on CPU: Gemma 3 4B x chemfm-1b, the step-2000 paper connector, on the minimal eval set
+# (examples/README.md).
+destination: release/gemma-3-4b-it/chemfm-1b/molecule-access-novel-scaffold-mini/trained
+suite: {$ref: ../suite_specs/molecule-access-novel-scaffold-mini.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/chemfm-1b/step_002000}
+inputs:
+  m:
+  - {$pin: release/molecule/chemfm-1b/embeddings-mini}
+step: 2000
+device_class: cpu
+plan: {planner: length-stable/v1, budget_tokens: 32768, pad_every_batch: true}  # the hf backend pads every batch

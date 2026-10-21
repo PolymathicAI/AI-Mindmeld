@@ -1,0 +1,12 @@
+# gemma-3-4b-it's version of suites/kimi-k2.6/chemfm-1b-molecule-access-novel-scaffold-untrained.yaml.
+destination: connectors/gemma-3-4b-it/chemfm-1b/molecule-access-novel-scaffold/untrained
+suite: {$ref: ../../suite_specs/gemma-3-4b-it/molecule-access-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/chemfm-1b/step_000000}
+inputs:
+  m:
+  - {$pin: embeddings/chemfm-1b/molecule-eval-novel-scaffold}
+step: 0
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

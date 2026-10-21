@@ -1,0 +1,8 @@
+# Embeddings of the training objects at the six layers of esmc-300m-layers.yaml (latent_interconnect.run.extract);
+# the diagnostics read training objects only.
+destination: mine/esmc-300m-layers/embeddings
+recipe: {$ref: esmc-300m-layers.yaml}
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+objects: {$pin: mine/items-train}
+part_size: 8
+device_class: cpu

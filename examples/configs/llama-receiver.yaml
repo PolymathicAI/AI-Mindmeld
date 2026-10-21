@@ -1,0 +1,18 @@
+# Extension path 4: a different language model through the generic Hugging Face backend
+# (latent_interconnect.receivers.base.ReceiverSpec; examples/guides/extending.md §4). A worked, trained example of the same
+# shape: examples/configs/pipeline/qwen2.5-0.5b-instruct.yaml (examples/guides/extending.md §6).
+name: llama-3.1-8b        # the receiver's registry name; a connector config names it in its `receiver`
+model_id: meta-llama/Llama-3.1-8B-Instruct   # a Hugging Face model id, or a local model directory
+revision: main            # example only: pin a commit sha before real use (records cite it)
+depth: 32                 # the number of decoder layers (config.num_hidden_layers). Writes go to layers 0 .. depth - 1,
+                          # layer L being the input of decoder layer L (0: the token-embedding output); the hf backend
+                          # refuses a model whose layer list has another length
+d_model: 4096             # the hidden width (config.hidden_size): the size of every write
+placeholder: " X"         # the text of one slot token, which a connector's writes replace; it must encode to exactly
+                          # one token id in this tokenizer (checked at load). A leading space keeps it one token in most
+                          # BPE vocabularies; try another text if the check fails
+layers_path: model.layers # the attribute path, from the loaded model, to its list of decoder layers (an nn.ModuleList
+                          # inside the decoder that get_decoder() names); the backend hooks writes onto these layers.
+                          # model.layers holds for Llama, Qwen2, Mistral and Gemma; a multimodal wrapper has its own
+                          # path (configs/receivers/gemma-3-4b-it.yaml)
+backends: {score: hf, train: hf, generate: hf, capture: hf}   # capability -> registered backend

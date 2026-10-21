@@ -1,0 +1,28 @@
+# The ordinary ESM-C 6B connector of Fig 7: connectors/kimi-k2.6/esmc-600m.yaml with the encoder, the
+# read and the starting alphas changed and nothing else. Read: the token mean [51 | 80], 5,120 dims
+# (configs/shared/read-esmc-6b.yaml; the common read of all three receivers). Write: Kimi's shared protein set
+# 7, 13, 22, 33, 49, 58 plus the layer-0 constant, as the 600M connector (an inherited choice, not a 6B layer
+# selection). One token, init target the description-primed name state.
+name: esmc-6b-affine
+receiver: kimi-k2.6
+input: {recipe: esmc-6b-l51l80, layers: {$ref: ../../shared/read-esmc-6b.yaml}, combine: concat}
+tokens:
+  - {target: name_described}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+    - [7, 13, 22, 33, 49, 58]
+kind: affine
+# Alpha: every write-layer alpha, the first included, learned (sigmoid), no budget; the layer-0 constant
+# stays at alpha 1. Each starts at its per_layer value below (the clipped weighted start, as for every connector).
+# Starting alphas: the AUROC-weighted rule clipped to [0.1, 0.9], from this connector's own Kimi
+# single-layer study (record 26e42435, numbers a6371e0c; the four protein tasks), exploratory, selected on the same
+# items it was scored on. No two-set scan scored them.
+alpha: {first: null, init: 0.5, learned: true, budget: null, per_layer: {7: 0.9, 13: 0.842768, 22: 0.39908, 33: 0.224713, 49: 0.113193, 58: 0.113395}}
+seed: 0
+layer_choice:
+  decisions: []
+  note: "the paper's architecture; read [51|80] (the common read); writes the shared Kimi protein
+    write layers 7/13/22/33/49/58 (see examples/guides/choosing_layers.md); layer 0 writes only the
+    object-independent constant"

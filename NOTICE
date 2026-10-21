@@ -1,0 +1,29 @@
+AI Mindmeld: A Latent Interconnect Protocol
+https://github.com/PolymathicAI/AI-Mindmeld
+
+Paper: Siavash Golkar, Jake Kovalic, and Shirley Ho.
+AI Mindmeld: A Latent Interconnect Protocol. 2026. Manuscript.
+
+Software: Siavash Golkar and the AI Mindmeld contributors.
+AI Mindmeld. https://github.com/PolymathicAI/AI-Mindmeld
+
+Please credit the paper first and the repository second when using this
+project's code or released artifacts in your work. CITATION.cff provides
+machine-readable citation metadata; cite the software revision you used.
+
+Project code is licensed under Apache-2.0; see LICENSE. This citation request
+does not add a condition to that license. Redistribution must preserve
+applicable notices as required by Apache-2.0, including Section 4(d).
+
+Our released connector weights, the two minimal evaluation sets, and ridge
+starts have separate terms in LICENSE-ARTIFACTS.md. Third-party model and data
+terms remain applicable; this notice does not replace them.
+
+Items built on ChemFM (CC BY-NC 4.0, per
+https://github.com/TheLuoFengLab/ChemFM/blob/master/LICENSE) or on PGLM-1B
+(non-commercial terms, per its model card) carry those non-commercial terms:
+on top of that grant for the connectors *__chemfm-1b, *__chemfm-3b* and
+*__pglm-1b, their ridge starts and molecule-chemfm-1b-mini, and as the
+governing terms of the embedding data bundles embeddings-chemfm-1b,
+embeddings-chemfm-3b and embeddings-pglm-1b, which are outside that grant.
+See LICENSE-ARTIFACTS.md.

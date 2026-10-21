@@ -1,0 +1,21 @@
+# gemma-3-4b-it's molecule-access-novel-scaffold suite on molecule-domain, the molecule domain whose sets drop the
+# 39 porphyrin-string molecules and the 6 without a ChEBI formula, under the receiver's answers.
+id: molecule-access-novel-scaffold
+kind: yes_no
+domains:
+- name: molecule
+  data: {$pin: molecule-domain}
+item_set: {$pin: items/molecule-eval-novel-scaffold}
+tasks: [hydroxides, heterocyclic compound, lipid, organonitrogen heterocyclic compound, carbohydrates and carbohydrate derivatives,
+  heteropolycyclic compound, ester, monocyclic compound, ether, alcohol, benzenoid aromatic compound, ketone, organic polycyclic
+    compound, salt, organic tricyclic compound, lactone, flavonoids, steroid, carbopolycyclic compound, peptide, organic fundamental
+    parent, sulfur oxoacid derivative, chlorobenzenes]
+frame: {id: a5, user: 'Here is an unknown compound, given to you as an embedding:<SLOT:x>. {question}'}
+slots:
+- {name: x, role: object, connector: m}
+conditions:
+- {object: own}
+thinking: false
+capability: score
+params: {}
+answer: {$ref: ../../answers/gemma-3.yaml}

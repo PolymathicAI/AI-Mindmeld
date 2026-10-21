@@ -1,0 +1,27 @@
+# CPU smoke of the training chain on released data. A copy of the paper run
+# configs/runs/gemma-3-4b-it/esmc-600m.yaml (unchanged) with the paper's connector,
+# receiver, encoder, inputs, mixture and optimizer, overriding only: 3 steps (paper 2,000), batch 2 (paper 85, micro-batch
+# 16), device_class cpu (paper A100), no training-time monitor evaluation, no periodic resume state. Every {$pin} is installed by
+# examples/README.md "9. Try a short training run".
+destination: train-from-release/gemma-3-4b-it/esmc-600m/cpu-smoke
+name: train-from-release-cpu-smoke
+connector: {$ref: ../../../configs/connectors/gemma-3-4b-it/esmc-600m.yaml}
+receiver: {$ref: ../../../configs/receivers/gemma-3-4b-it.yaml}
+encoder: {$ref: ../../../configs/encoders/esmc-600m.yaml}
+domain:
+  name: protein
+  data: {$pin: protein-domain}
+ridge:
+  name_described: {$pin: ridges/gemma-3-4b-it/esmc-600m/ridge}
+embeddings:
+- {$pin: embeddings/esmc-600m/protein-train/embeddings}
+- {$pin: embeddings/esmc-600m/protein-monitor/embeddings}
+- {$pin: embeddings/esmc-600m/protein-parents/embeddings}
+training_set: {$pin: protein-training-set/training_set}
+mixture: {$ref: ../../../configs/training/gemma-3-4b-it/mixture-protein.yaml}
+steps: 3
+batch: 2
+seed: 0
+device_class: cpu
+optimizer: {$ref: ../../../configs/training/optimizer.yaml}
+checkpoints: {resume_every: 1000, on_signal: false}

@@ -1,0 +1,306 @@
+# The molecule prompt grammar (data.grammar.GrammarSpec): converted from the paper molecule runs' prompt grammar
+# (at rate 0.5, formats min coverage 0.5; no target wording, so the target-wording fields are empty) by the protein
+# grammar's rules (grammar-protein.yaml):
+# - training entries only (the last entry of every pool and instruction list of two or more is the original's held-out
+#   entry and is dropped; seps has none); <SLOT> -> <SLOT:x>;
+# - cores for the six trained text tasks of molecule-domain-band-split (the conjugate cores are dropped: the original molecule
+#   task split dropped those tasks);
+# - formats: per task, every format of its group (text: none, verbatim, one_sentence, two_sentences, bullets; list:
+#   none, verbatim) that the original engine allowed the task (its table of allowed formats: bullets
+#   only for describe), enabled on the run's training text by the declared coverage rule; disabled: none (the
+#   original list was empty);
+# - reject: the original molecule runs' held-out templates (a training draw that reproduces one is redrawn).
+rate: 0.5
+system_roles:
+- null
+- You are a chemistry assistant. Compounds are given to you as a single embedding token in place of their
+  name.
+- Each compound in this conversation is represented by one embedding token instead of its name. Treat the
+  token as that compound.
+- You answer questions about compounds that are given as embeddings rather than names.
+- Compound annotation assistant. The compound in each query is given as an embedding token.
+- You are an expert in chemistry. The user refers to compounds by embedding tokens, not by name.
+- You are a helpful assistant for chemistry. Compounds appear as embedding tokens rather than names.
+- Compounds are written here as embedding tokens. Each token stands for one specific compound.
+- You are a biochemistry tutor. The student refers to each compound by an embedding token instead of a name.
+- Assistant for compound questions. An embedding token takes the place of each compound's name.
+- You work with compound embeddings. When the user shows an embedding token, answer about the compound it
+  represents.
+leads:
+- ""
+- "Quick question: "
+- "I have a question about a compound. "
+- "For a review I am writing: "
+- "Please help with this. "
+- "Here is something I am curious about. "
+- "One more question. "
+- "I need this for my notes. "
+- "Can you help? "
+slot_phrases:
+- the compound<SLOT:x>
+- compound<SLOT:x>
+- the embedding<SLOT:x>
+- the compound represented by<SLOT:x>
+- the compound encoded as<SLOT:x>
+- this compound,<SLOT:x>,
+- the compound with embedding<SLOT:x>
+- the compound given as<SLOT:x>
+- the compound denoted<SLOT:x>
+- the compound shown as<SLOT:x>
+- the compound behind the embedding<SLOT:x>
+intros:
+- Compound:<SLOT:x>
+- Here is a compound:<SLOT:x>.
+- Embedding:<SLOT:x>
+- Consider the compound<SLOT:x>.
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>.
+- <SLOT:x>
+- The compound in question is<SLOT:x>.
+- Compound embedding:<SLOT:x>
+- Take the compound<SLOT:x>.
+- My compound is<SLOT:x>.
+- Look at this compound:<SLOT:x>.
+- Query compound:<SLOT:x>
+- I am studying the compound<SLOT:x>.
+seps:
+- " "
+- "\n"
+refs:
+- " The compound is<SLOT:x>."
+- " Compound:<SLOT:x>"
+- " It is given as<SLOT:x>."
+- " The embedding is<SLOT:x>."
+- " (Compound:<SLOT:x>)"
+- " Here it is:<SLOT:x>."
+- " It is represented by<SLOT:x>."
+yes_no_inline:
+- "Regarding {P}: "
+- "About {P}: "
+- "Question about {P}: "
+- "For {P}: "
+- "Considering {P}: "
+- "On {P}: "
+- "Concerning {P}: "
+yes_no_formats:
+- " Answer with Yes or No."
+- " (Yes/No)"
+- " Reply with a single word, Yes or No."
+- " Answer Yes or No."
+- " Yes or no?"
+- " Please answer Yes or No."
+- " Respond with Yes or No only."
+- " Just say Yes or No."
+- " Answer: Yes or No?"
+cores:
+  describe:
+    inline:
+    - Describe {P}.
+    - What is {P}, and what does it do?
+    - Tell me about {P}.
+    - Give an overview of {P}.
+    - What can you tell me about {P}?
+    - Summarize what is known about {P}.
+    - Explain what {P} is.
+    pronoun:
+    - Describe it.
+    - What is it and what does it do?
+    - Tell me about this compound.
+    - What can you say about this compound?
+    - Give an overview of it.
+    - Summarize what is known about it.
+    - Explain what this compound is.
+  roles:
+    inline:
+    - What does {P} do?
+    - What is the biological role of {P}?
+    - What role does {P} play in living systems?
+    - Describe the biological activity of {P}.
+    - What is {P} active as?
+    - What job does {P} do in biology?
+    - Explain the biological role of {P}.
+    pronoun:
+    - What does it do?
+    - What is its biological role?
+    - What role does it play in living systems?
+    - What is this compound's biological role?
+    - What is it active as?
+    - What job does it do in biology?
+    - Explain its biological role.
+  functional_parent:
+    inline:
+    - Which compound is {P} derived from?
+    - What is the functional parent of {P}?
+    - Which parent compound does {P} come from?
+    - What compound is {P} formally derived from?
+    - Name the functional parent of {P}.
+    pronoun:
+    - Which compound is it derived from?
+    - What is its functional parent?
+    - Which parent compound does it come from?
+    - What compound is it formally derived from?
+    - Name its functional parent.
+  describe_def:
+    inline:
+    - Describe {P}.
+    - What is {P}, and what does it do?
+    - Tell me about {P}.
+    - Give an overview of {P}.
+    - What can you tell me about {P}?
+    - Summarize what is known about {P}.
+    - Explain what {P} is.
+    pronoun:
+    - Describe it.
+    - What is it and what does it do?
+    - Tell me about this compound.
+    - What can you say about this compound?
+    - Give an overview of it.
+    - Summarize what is known about it.
+    - Explain what this compound is.
+  functional_group_classes:
+    inline:
+    - Which functional-group classes does {P} belong to?
+    - What functional groups characterize {P}?
+    - Classify {P} by structure.
+    - Which functional-group classes is {P} a member of?
+    - What kind of compound is {P}, structurally?
+    - Name the structural classes of {P}.
+    - What structural classes include {P}?
+    pronoun:
+    - Which functional-group classes does it belong to?
+    - What functional groups characterize it?
+    - Classify it by structure.
+    - What are its structural classes?
+    - What kind of compound is it, structurally?
+    - Name its structural classes.
+    - What structural classes include it?
+  parent_family:
+    inline:
+    - Which scaffold, ring-system or natural-product family (or parent compound) does {P} belong to or derive
+      from?
+    - What is the parent family of {P}?
+    - Classify {P} by compound family.
+    - Which family of compounds is {P} a member of?
+    - To which family does {P} belong?
+    - Name the parent family of {P}.
+    - What compound family includes {P}?
+    pronoun:
+    - Which scaffold, ring-system or natural-product family (or parent compound) does it belong to or derive
+      from?
+    - What is its parent family?
+    - Classify it by compound family.
+    - Which family of compounds is it a member of?
+    - To which family does it belong?
+    - Name its parent family.
+    - What compound family includes it?
+formats:
+  describe:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a ChEBI entry would."
+    - " Answer in the style of a ChEBI entry."
+    - " Write the answer as a ChEBI annotation would."
+  - transform: one_sentence
+    instructions:
+    - " Answer in one sentence."
+    - " Reply with a single sentence."
+    - " Use one sentence."
+  - transform: two_sentences
+    instructions:
+    - " Answer in at most two sentences."
+    - " Use no more than two sentences."
+    - " Reply in one or two sentences."
+  - transform: bullets
+    instructions:
+    - " Give the key facts as a bulleted list."
+    - " Answer as a bulleted list."
+    - " List the key facts as bullet points."
+  roles:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a ChEBI entry would."
+    - " Answer in the style of a ChEBI entry."
+    - " Use ChEBI-style wording."
+  functional_parent:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a ChEBI entry would."
+    - " Answer in the style of a ChEBI entry."
+    - " Use ChEBI-style wording."
+  describe_def:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a ChEBI entry would."
+    - " Answer in the style of a ChEBI entry."
+    - " Write the answer as a ChEBI annotation would."
+  - transform: one_sentence
+    instructions:
+    - " Answer in one sentence."
+    - " Reply with a single sentence."
+    - " Use one sentence."
+  - transform: two_sentences
+    instructions:
+    - " Answer in at most two sentences."
+    - " Use no more than two sentences."
+    - " Reply in one or two sentences."
+  functional_group_classes:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a ChEBI entry would."
+    - " Answer in the style of a ChEBI entry."
+    - " Use ChEBI-style wording."
+  parent_family:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a ChEBI entry would."
+    - " Answer in the style of a ChEBI entry."
+    - " Use ChEBI-style wording."
+reject:
+- Can you characterize the compound behind this embedding for me?<SLOT:x>
+- Our lab isolated a compound, and a model produced the embedding<SLOT:x> for it. Before we plan experiments,
+  what can you tell us about this compound and what it does?
+- Summarize the biological activity of<SLOT:x> in a sentence or two.
+- If you had to explain to a pharmacologist what<SLOT:x> does, what would you say?
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>. What functional-group class is it?
+- In terms of functional groups, what kind of compound is<SLOT:x>?
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>. Which compound family does it belong
+  to?
+- Which known scaffold family is<SLOT:x> built on?
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>. Which compound is it derived from?
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>. What are its formula, net charge and
+  mass?
+- What is the molecular formula of<SLOT:x>?
+- "Formula of<SLOT:x>:"
+- <SLOT:x> — how heavy is it, and what is its elemental formula?
+- Before weighing out the compound<SLOT:x> for an assay, we need its formula and mass. What are they?
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>. Where does it occur naturally, and what
+  is it used for?
+- What is the compound<SLOT:x> used for?
+- "Uses and natural sources of<SLOT:x>:"
+- <SLOT:x> — which organisms produce it, and what applications does it have?
+- We found the compound<SLOT:x> in an extract and want to know where it comes from and how it is applied.
+  What can you say?
+- Here is an unknown compound, given to you as an embedding:<SLOT:x>. {question} Answer Yes or No.
+- Here's a compound:<SLOT:x>. {question} Just say Yes or No.
+lexicon: lipid|ester|ether|alcohol|keton|lacton|flavon|steroid|peptid|sacchar|carbohydr|aromat|benzen|cycl|hydrox|salt|chlor|sulf|oxoacid|nitrogen|amin|amid|acid|base|conjugat|anion|cation|charge|inhibit|agonist|antagon|metabol|drug|toxi|antibact|antimicrob|antivir|enzym|receptor|pesticid|herbicid|fungi|plant|bacteri|human|mouse|phosph|glyco|halogen|mass|weight|formula|element
+min_coverage: 0.5
+coverage_sample: 2000
+coverage_seed: 99
+disabled: {}

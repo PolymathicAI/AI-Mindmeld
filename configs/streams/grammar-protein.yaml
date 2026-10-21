@@ -1,0 +1,459 @@
+# The original protein runs' prompt grammar with its target wording (data.grammar.GrammarSpec): converted from the
+# original runs' prompt grammar and target wording (at rate 0.5) by these rules:
+# - training entries only: the last entry of every pool and instruction list of two or more entries is the original's
+#   held-out entry (its unseen-wording evaluation) and is dropped; seps has none;
+# - <SLOT> -> <SLOT:x>;
+# - the subunit core_rewrites applied (never to a held-out entry); partner_cores lists the training subunit cores whose
+#   core_intent is "partners"; template_rewrites and partner_templates from the wording's subunit block;
+# - source_cores, source_example_questions, format_example_questions, announce_uniprot, flag_tasks (flag_qtypes),
+#   fit_cap_formats and pathway_sentence_max_parts from the wording; extra_formats (pathway_sentence) merged;
+# - formats: per task, every answer format of its group that the task allows (the original engine's table of
+#   allowed formats), with its training instructions; a format is enabled when it applies to at least
+#   min_coverage of the training texts of the task's field (a sample of coverage_sample texts, seed coverage_seed; the
+#   original fit_coverage rule) and is not in `disabled` (the grammar's and the target wording's disabled_formats, each
+#   with its measured reason); `none` always;
+# - reject: the original protein runs' held-out templates (a training draw that reproduces one is redrawn).
+rate: 0.5
+system_roles:
+- null
+- You are a protein biology assistant. Proteins are given to you as a single embedding token in place of their name.
+- Each protein in this conversation is represented by one embedding token instead of its name. Treat the token as that protein.
+- You answer questions about proteins that are given as embeddings rather than names.
+- Protein annotation assistant. The protein in each query is given as an embedding token.
+- You are an expert in protein function. The user refers to proteins by embedding tokens, not by name.
+- You are a helpful assistant for molecular biology. Proteins appear as embedding tokens rather than names.
+- Proteins are written here as embedding tokens. Each token stands for one specific protein.
+- You are a biochemistry tutor. The student refers to each protein by an embedding token instead of a name.
+- Assistant for protein questions. An embedding token takes the place of each protein's name.
+- You work with protein embeddings. When the user shows an embedding token, answer about the protein it represents.
+leads:
+- ""
+- "Quick question: "
+- "I have a question about a protein. "
+- "For a review I am writing: "
+- "Please help with this. "
+- "Here is something I am curious about. "
+- "One more question. "
+- "I need this for my notes. "
+- "Can you help? "
+slot_phrases:
+- "the protein<SLOT:x>"
+- "protein<SLOT:x>"
+- "the embedding<SLOT:x>"
+- "the protein represented by<SLOT:x>"
+- "the protein encoded as<SLOT:x>"
+- "this protein,<SLOT:x>,"
+- "the protein with embedding<SLOT:x>"
+- "the protein given as<SLOT:x>"
+- "the protein denoted<SLOT:x>"
+- "the protein shown as<SLOT:x>"
+- "the protein behind the embedding<SLOT:x>"
+intros:
+- "Protein:<SLOT:x>"
+- "Here is a protein:<SLOT:x>."
+- "Embedding:<SLOT:x>"
+- "Consider the protein<SLOT:x>."
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>."
+- "<SLOT:x>"
+- "The protein in question is<SLOT:x>."
+- "Protein embedding:<SLOT:x>"
+- "Take the protein<SLOT:x>."
+- "My protein is<SLOT:x>."
+- "Look at this protein:<SLOT:x>."
+- "Query protein:<SLOT:x>"
+- "I am studying the protein<SLOT:x>."
+seps:
+- " "
+- "\n"
+refs:
+- " The protein is<SLOT:x>."
+- " Protein:<SLOT:x>"
+- " It is given as<SLOT:x>."
+- " The embedding is<SLOT:x>."
+- " (Protein:<SLOT:x>)"
+- " Here it is:<SLOT:x>."
+- " It is represented by<SLOT:x>."
+yes_no_inline:
+- "Regarding {P}: "
+- "About {P}: "
+- "Question about {P}: "
+- "For {P}: "
+- "Considering {P}: "
+- "On {P}: "
+- "Concerning {P}: "
+yes_no_formats:
+- " Answer with Yes or No."
+- " (Yes/No)"
+- " Reply with a single word, Yes or No."
+- " Answer Yes or No."
+- " Yes or no?"
+- " Please answer Yes or No."
+- " Respond with Yes or No only."
+- " Just say Yes or No."
+- " Answer: Yes or No?"
+cores:
+  describe:
+    inline:
+    - Describe {P}.
+    - What is {P}, and what does it do?
+    - Tell me about {P}.
+    - Give an overview of {P}.
+    - What can you tell me about {P}?
+    - Summarize what is known about {P}.
+    - Explain what {P} is.
+    pronoun:
+    - Describe it.
+    - What is it and what does it do?
+    - Tell me about this protein.
+    - What can you say about this protein?
+    - Give an overview of it.
+    - Summarize what is known about it.
+    - Explain what this protein is.
+  function:
+    inline:
+    - What does {P} do?
+    - What is the function of {P}?
+    - What role does {P} play in the cell?
+    - Describe the function of {P}.
+    - What is {P} for?
+    - What job does {P} do?
+    - Explain the biological role of {P}.
+    pronoun:
+    - What does it do?
+    - What is its function?
+    - What role does it play in the cell?
+    - What is this protein's function?
+    - What is it for?
+    - What job does it do?
+    - Explain its biological role.
+  family:
+    inline:
+    - Which protein family does {P} belong to?
+    - What family is {P} in?
+    - Classify {P} by protein family.
+    - Which family of proteins is {P} a member of?
+    - To which family does {P} belong?
+    - Name the protein family of {P}.
+    - What protein family includes {P}?
+    pronoun:
+    - Which family does it belong to?
+    - What family is it in?
+    - Classify it by protein family.
+    - What is its protein family?
+    - To which family does it belong?
+    - Name its protein family.
+    - What protein family includes it?
+  location:
+    inline:
+    - Where in the cell is {P} found?
+    - What is the subcellular location of {P}?
+    - Where does {P} localize?
+    - In which cellular compartment is {P} located?
+    - Where is {P} located in the cell?
+    - What is the localization of {P}?
+    - Which part of the cell contains {P}?
+    pronoun:
+    - Where in the cell is it found?
+    - What is its subcellular location?
+    - Where does it localize?
+    - In which compartment is it located?
+    - Where is it located in the cell?
+    - What is its localization?
+    - Which part of the cell contains it?
+  subunit:
+    inline:
+    - What is known about the subunit structure of {P}?
+    - What is the subunit structure of {P}?
+    - What does {P} interact with?
+    - Which partners does {P} associate with?
+    - Describe the quaternary structure of {P}.
+    pronoun:
+    - What is known about its subunit structure?
+    - What is its subunit structure?
+    - What does it interact with?
+    - Which partners does it associate with?
+    - Describe its quaternary structure.
+  catalytic:
+    inline:
+    - Which reaction does {P} catalyze?
+    - What is the catalytic activity of {P}?
+    - Write the reaction catalyzed by {P}.
+    - What chemical reaction does {P} carry out?
+    - Give the reaction that {P} catalyzes.
+    pronoun:
+    - Which reaction does it catalyze?
+    - What is its catalytic activity?
+    - Write the reaction it catalyzes.
+    - What chemical reaction does it carry out?
+    - Give the reaction it catalyzes.
+  ec:
+    inline:
+    - What is the EC number of {P}?
+    - Give the EC classification of {P}.
+    - Which EC number is assigned to {P}?
+    pronoun:
+    - What is its EC number?
+    - Give its EC classification.
+    - Which EC number is assigned to it?
+  pathway:
+    inline:
+    - Which pathway does {P} take part in?
+    - In what pathway is {P} involved?
+    - Which metabolic pathway includes {P}?
+    - What pathway is {P} part of?
+    - Name the pathway that {P} participates in.
+    pronoun:
+    - Which pathway does it take part in?
+    - In what pathway is it involved?
+    - Which metabolic pathway includes it?
+    - What pathway is it part of?
+    - Name the pathway it participates in.
+source_cores:
+  subunit:
+    inline:
+    - What does UniProt say about the subunit structure of {P}?
+    - What does the UniProt entry for {P} say about its subunit structure?
+    - How does UniProt describe the subunit structure of {P}?
+    pronoun:
+    - What does UniProt say about its subunit structure?
+    - What does its UniProt entry say about its subunit structure?
+    - How does UniProt describe its subunit structure?
+  function:
+    inline:
+    - What does UniProt say about the function of {P}?
+    - What does the UniProt entry for {P} say about its function?
+    - How does UniProt describe the function of {P}?
+    pronoun:
+    - What does UniProt say about its function?
+    - What does its UniProt entry say about its function?
+    - How does UniProt describe its function?
+  describe:
+    inline:
+    - What does UniProt say about {P}?
+    - How does UniProt describe {P}?
+    - What does the UniProt entry for {P} say?
+    pronoun:
+    - What does UniProt say about it?
+    - How does UniProt describe this protein?
+    - What does its UniProt entry say?
+formats:
+  describe:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a UniProt entry would."
+    - " Answer in the style of a UniProt entry."
+    - " Write the answer as a UniProt annotation would."
+  - transform: one_sentence
+    instructions:
+    - " Answer in one sentence."
+    - " Reply with a single sentence."
+    - " Use one sentence."
+  - transform: two_sentences
+    instructions:
+    - " Answer in at most two sentences."
+    - " Use no more than two sentences."
+    - " Reply in one or two sentences."
+  - transform: this_protein
+    instructions:
+    - " Start your answer with \"This protein\"."
+    - " Begin with \"This protein\"."
+  - transform: bullets
+    instructions:
+    - " Give the key facts as a bulleted list."
+    - " Answer as a bulleted list."
+    - " List the key facts as bullet points."
+  function:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a UniProt entry would."
+    - " Answer in the style of a UniProt entry."
+    - " Write the answer as a UniProt annotation would."
+  - transform: one_sentence
+    instructions:
+    - " Answer in one sentence."
+    - " Reply with a single sentence."
+    - " Use one sentence."
+  - transform: two_sentences
+    instructions:
+    - " Answer in at most two sentences."
+    - " Use no more than two sentences."
+    - " Reply in one or two sentences."
+  - transform: this_protein
+    instructions:
+    - " Start your answer with \"This protein\"."
+    - " Begin with \"This protein\"."
+  - transform: bullets
+    instructions:
+    - " Give the key facts as a bulleted list."
+    - " Answer as a bulleted list."
+    - " List the key facts as bullet points."
+  subunit:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a UniProt entry would."
+    - " Answer in the style of a UniProt entry."
+    - " Write the answer as a UniProt annotation would."
+  - transform: one_sentence
+    instructions:
+    - " Answer in one sentence."
+    - " Reply with a single sentence."
+    - " Use one sentence."
+  - transform: two_sentences
+    instructions:
+    - " Answer in at most two sentences."
+    - " Use no more than two sentences."
+    - " Reply in one or two sentences."
+  - transform: bullets
+    instructions:
+    - " Give the key facts as a bulleted list."
+    - " Answer as a bulleted list."
+    - " List the key facts as bullet points."
+  pathway:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Answer as a UniProt entry would."
+    - " Answer in the style of a UniProt entry."
+    - " Write the answer as a UniProt annotation would."
+  - transform: one_sentence
+    instructions:
+    - " Answer in one sentence."
+    - " Reply with a single sentence."
+    - " Use one sentence."
+  - transform: two_sentences
+    instructions:
+    - " Answer in at most two sentences."
+    - " Use no more than two sentences."
+    - " Reply in one or two sentences."
+  - transform: pathway_sentence
+    instructions:
+    - " Answer in a full sentence."
+    - " Reply with a complete sentence."
+  family:
+  - transform: none
+    instructions:
+    - ""
+  - transform: family_name
+    instructions:
+    - " Give just the family name."
+    - " Only name the family."
+    - " Answer with the family name only."
+  - transform: verbatim
+    instructions:
+    - " Answer in a full sentence."
+    - " Reply with a complete sentence."
+  location:
+  - transform: none
+    instructions:
+    - ""
+  - transform: loc_list
+    instructions:
+    - " List the compartments, separated by commas."
+    - " Give a comma-separated list of compartments."
+    - " Answer with a list of locations separated by commas."
+  - transform: loc_sentence
+    instructions:
+    - " Answer in a full sentence."
+    - " Reply with a complete sentence."
+  catalytic:
+  - transform: none
+    instructions:
+    - ""
+  - transform: reaction_sentence
+    instructions:
+    - " Answer in a full sentence."
+    - " Reply with a complete sentence."
+  ec:
+  - transform: none
+    instructions:
+    - ""
+  - transform: verbatim
+    instructions:
+    - " Give only the EC number."
+    - " Just the EC number, please."
+    - " Answer with the EC number only."
+  - transform: ec_sentence
+    instructions:
+    - " Answer in a sentence."
+    - " Reply with a complete sentence."
+min_coverage: 0.5
+coverage_sample: 2000
+coverage_seed: 99
+disabled:
+  "describe:this_protein": "coverage 0.485-0.501 on train proteins: borderline to the 0.5 rule; fixed off so the enabled set\
+    \ does not depend on the coverage sample"
+  "function:this_protein": coverage 0.491-0.499; as describe
+  "describe:two_sentences": "GPU answerability, vet_prompt_formats --formats: instruction makes the answer likelier in 0.567\
+    \ of 30 prompts < 0.6"
+  "pathway:two_sentences": "answerability 0.533, median gain 0.38 nats: pathway fields are mostly one sentence, so the format\
+    \ equals the verbatim text"
+  "location:loc_sentence": answerability 0.567, median gain 0.30 nats
+  "describe:bullets": "rechecked: instruction helps 0.567 of 30 prompts, median gain 0.56 nats < the 0.6 bar"
+  "function:bullets": "rechecked: 0.533 of 30, median 1.58"
+  "subunit:two_sentences": "rechecked: 0.567 of 30, median 0.53"
+reject:
+- "Can you characterize the protein behind this embedding for me?<SLOT:x>"
+- "Our lab isolated a protein, and a model produced the embedding<SLOT:x> for it. Before we plan experiments, what can you\
+  \ tell us about this protein and what it does?"
+- "Summarize the activity of<SLOT:x> in a sentence or two."
+- "If you had to explain to a biologist what<SLOT:x> does, what would you say?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. Which protein family does it belong to?"
+- "Which known protein family is<SLOT:x> most similar to?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. Where in the cell is it located?"
+- "Where does the protein<SLOT:x> localize?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. What complexes does it form or what does it interact\
+  \ with?"
+- "Is the protein<SLOT:x> a monomer, a dimer, or part of a larger assembly?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. What reaction does it catalyze?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. Which pathway is it part of?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. Which cofactors does it need?"
+- "What cofactor does<SLOT:x> require?"
+- "Cofactor of<SLOT:x>:"
+- "<SLOT:x> — does it need a metal ion or another cofactor, and which one?"
+- "Before crystallizing the enzyme<SLOT:x>, we want to add its cofactor to the buffer. Which cofactor does it need?"
+- "Here is an unknown protein, given to you as an embedding:<SLOT:x>. {question} Answer Yes or No."
+- "Here's a protein:<SLOT:x>. {question} Just say Yes or No."
+- "Protein:<SLOT:x>\nEC classification:"
+lexicon: membran|nucle|mitochond|cytopl|secret|enzym|kinase|ribosom|transport|bind|dna|rna|metal|zinc|magnes|hydrolas|transferas|bacteri|mammal|human|mouse|phosph|glyco|signal|disulfide|channel|receptor
+announce_uniprot:
+- subunit
+- pathway
+flag_tasks:
+- subunit
+- function
+- describe
+fit_cap_formats:
+- two_sentences
+- pathway_sentence
+partner_cores:
+  subunit:
+    inline:
+    - 2
+    - 3
+    pronoun:
+    - 2
+    - 3
+template_rewrites:
+  sub_03: "<SLOT:x> — what is its subunit structure?"
+  sub_07: "What is known about the subunit structure of<SLOT:x>?"
+partner_templates:
+- sub_05
+- sub_08
+source_example_questions:
+  subunit: What does UniProt say about its subunit structure?
+  function: What does UniProt say about its function?
+  describe: What does UniProt say about this protein?
+format_example_questions:
+  pathway_sentence: Which pathway does it take part in?
+pathway_sentence_max_parts: 2

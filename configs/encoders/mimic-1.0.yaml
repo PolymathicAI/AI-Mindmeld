@@ -1,0 +1,18 @@
+# MIMIC 1.0, the public release of MIMIC (https://huggingface.co/polymathic-ai/MIMIC, tag v1.0; MIT): the same
+# read as mimic-mean at the layers the MIMIC connectors read, the residue mean at EVA encoder layers 16 and
+# 20 (extractors/mimic.py; registers and padding out, one position per residue), loaded through the public `mimic`
+# package (options.source: hub; environment: env/constraints/mimic.txt). MIMIC 1.0's weights are the bf16 rounding of
+# the checkpoint of mimic-mean.yaml (5.7_main/E20-D12-H1536-pt7-synced). The trained MIMIC connectors were
+# trained on that checkpoint's embeddings and read these for raw inputs (examples/README.md, "MIMIC from raw
+# inputs").
+name: mimic-1.0
+extractor: mimic
+domain: protein
+model_id: polymathic-ai/MIMIC
+revision: 40bb974c1b66598168117f2b561e158e769a4a8b   # the Hugging Face commit of tag v1.0
+read: [16, 20]
+pooling: mean
+environment: mimic
+batch_tokens: 32768       # mimic-mean.yaml's
+options:
+  source: hub

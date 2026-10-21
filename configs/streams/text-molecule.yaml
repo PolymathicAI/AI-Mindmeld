@@ -1,0 +1,218 @@
+# The paper molecule runs' single-compound text stream (data.qa_streams.TextParams): the original molecule runs'
+# train templates, <SLOT> -> <SLOT:x>, each citing its original qtype
+# as the trained text task of molecule-domain-band-split (describe, describe_def, roles -> mechanism_roles,
+# functional_group_classes, parent_family, functional_parent); cluster_sqrt objects, the answer cap 48
+# tokens, the loss curves of
+# the original molecule loss weights per qtype with its ';'-segment head boost (r_f per list qtype, on template rows and the
+# grammar's none / verbatim rows), the molecule in-context examples (rate 0.8) and grammar (rate 0.5). The
+# item-list fields are worded by answer_lines exactly as the original targets stored them ("Parent families: a; b.";
+# the molecule domain spec's item_lists; the training set joins items with "; "). Entries marked "new" are not the
+# original's (at least 3 wordings with the slot at 3 positions per problem).
+templates:
+- id: desc_01
+  task: describe
+  user: Here is an unknown compound, given to you as an embedding:<SLOT:x>. Describe what this compound is
+    and what it does.
+- id: desc_02
+  task: describe_def
+  user: <SLOT:x> — describe this compound.
+- id: desc_03
+  task: describe
+  user: Tell me about the compound<SLOT:x>.
+- id: desc_04
+  task: describe_def
+  user: Describe the compound encoded by the embedding<SLOT:x>.
+- id: desc_05
+  task: describe
+  user: What is<SLOT:x>? Give a short description of the compound.
+- id: desc_06
+  task: describe_def
+  user: Hi! I have a compound represented by this embedding:<SLOT:x>. Could you tell me what kind of compound
+    it is and what it does?
+- id: desc_07
+  task: describe
+  user: "Compound:<SLOT:x>\nDescription:"
+- id: desc_08
+  task: describe_def
+  user: I am annotating a batch of newly registered compounds for a database. The next compound on my list
+    is<SLOT:x>, and it has no annotation yet. Please write a brief description of what it is and what it does.
+- id: desc_09
+  task: describe
+  user: Provide a concise annotation, in the style of a ChEBI entry, for the compound<SLOT:x>.
+- id: desc_10
+  task: describe_def
+  user: The embedding token<SLOT:x> stands for a compound. Summarize what this compound is and what it does.
+- id: desc_11
+  task: describe
+  user: Explain in one or two sentences what the compound<SLOT:x> is and what it does.
+# new (not the original's; >= 3 wordings, >= 3 slot positions): the slot first
+- id: desc_n1
+  task: describe
+  user: <SLOT:x> stands for a compound I cannot identify. In a few sentences, what is it and what does it do?
+- id: desc_12
+  task: describe_def
+  user: "Here is a compound embedding:<SLOT:x>\nWrite its ChEBI-style description."
+- id: role_01
+  task: roles
+  user: What does the compound<SLOT:x> do?
+- id: role_02
+  task: roles
+  user: What is the biological role of<SLOT:x>?
+- id: role_03
+  task: roles
+  user: "Roles of compound<SLOT:x>:"
+- id: role_04
+  task: roles
+  user: <SLOT:x> is a compound. What is its biological role?
+- id: role_05
+  task: roles
+  user: Here is an unknown compound, given to you as an embedding:<SLOT:x>. What does it do?
+- id: role_06
+  task: roles
+  user: Describe the biological activity of the compound represented by<SLOT:x>.
+- id: role_07
+  task: roles
+  user: "Quick question: what's the job of<SLOT:x> in a biological system?"
+- id: role_08
+  task: roles
+  user: Given the embedding<SLOT:x>, state the compound's roles as they would appear in a ChEBI entry.
+- id: role_09
+  task: roles
+  user: While going through a screening dataset, a student flagged the compound<SLOT:x> as interesting but
+    could not find out what it does. Explain its biological role.
+- id: role_10
+  task: roles
+  user: How does<SLOT:x> act on living systems?
+- id: role_11
+  task: roles
+  user: "Compound embedding:<SLOT:x>. Task: list its biological roles."
+- id: role_12
+  task: roles
+  user: What role does the compound given by the embedding<SLOT:x> play?
+- id: fgc_01
+  task: functional_group_classes
+  user: Which functional-group classes does the compound<SLOT:x> belong to?
+- id: fgc_02
+  task: functional_group_classes
+  user: "Functional-group classes of<SLOT:x>:"
+- id: fgc_03
+  task: functional_group_classes
+  user: <SLOT:x> — which functional-group classes define it?
+- id: fgc_04
+  task: functional_group_classes
+  user: Which classes of functional groups does the embedding<SLOT:x> carry?
+- id: fgc_05
+  task: functional_group_classes
+  user: Here is an unknown compound, given to you as an embedding:<SLOT:x>. Which functional-group classes
+    does it belong to?
+- id: fgc_06
+  task: functional_group_classes
+  user: Classify the compound<SLOT:x> by its functional groups.
+- id: fgc_07
+  task: functional_group_classes
+  user: Any idea what functional-group class<SLOT:x> falls into?
+- id: fgc_08
+  task: functional_group_classes
+  user: Give the functional-group ChEBI classes of<SLOT:x>.
+- id: fgc_09
+  task: functional_group_classes
+  user: We are sorting a compound library by chemistry and need a functional-group class for each entry. For
+    the compound<SLOT:x>, which functional-group classes apply?
+- id: fgc_10
+  task: functional_group_classes
+  user: Functional-group class assignment for compound<SLOT:x>?
+- id: fgc_11
+  task: functional_group_classes
+  user: What functional-group classes does the compound encoded as<SLOT:x> fall under?
+- id: pfam_01
+  task: parent_family
+  user: Which scaffold, ring-system or natural-product family (or parent compound) does the compound<SLOT:x>
+    belong to or derive from?
+- id: pfam_02
+  task: parent_family
+  user: "Parent family of<SLOT:x>:"
+- id: pfam_03
+  task: parent_family
+  user: <SLOT:x> belongs to which family of compounds?
+- id: pfam_04
+  task: parent_family
+  user: Which parent compound or scaffold family does the embedding<SLOT:x> correspond to?
+- id: pfam_05
+  task: parent_family
+  user: Here is an unknown compound, given to you as an embedding:<SLOT:x>. What family of compounds is it
+    a member of?
+- id: pfam_06
+  task: parent_family
+  user: Place the compound<SLOT:x> in its parent family.
+- id: pfam_07
+  task: parent_family
+  user: Any idea what compound family<SLOT:x> is from?
+- id: pfam_08
+  task: parent_family
+  user: Give the parent family of<SLOT:x>, as ChEBI lists it.
+- id: pfam_09
+  task: parent_family
+  user: We are grouping natural products by scaffold. For the compound<SLOT:x>, which family should it be
+    grouped with?
+- id: pfam_10
+  task: parent_family
+  user: Family assignment for compound<SLOT:x>?
+- id: pfam_11
+  task: parent_family
+  user: What is the parent family of the compound encoded as<SLOT:x>?
+- id: fp_01
+  task: functional_parent
+  user: Which compound is<SLOT:x> functionally derived from?
+- id: fp_02
+  task: functional_parent
+  user: "Functional parent of<SLOT:x>:"
+- id: fp_03
+  task: functional_parent
+  user: <SLOT:x> — which parent compound is it derived from?
+- id: fp_04
+  task: functional_parent
+  user: Here is an unknown compound, given to you as an embedding:<SLOT:x>. What is its functional parent?
+- id: fp_05
+  task: functional_parent
+  user: To trace the chemistry of a natural product family, we need parent assignments. For the compound<SLOT:x>,
+    which parent compound is it formally derived from?
+- id: fp_06
+  task: functional_parent
+  user: "Compound:<SLOT:x>\nFunctional parent:"
+sampling: cluster_sqrt
+max_target_tokens: 48
+weights:
+  describe:
+    family: exp
+    floor: 0.1
+    tau: 1.9855
+  describe_def:
+    family: exp
+    floor: 0.1
+    tau: 2.0891
+  roles:
+    family: exp
+    floor: 0.1
+    tau: 0.5917
+  functional_group_classes:
+    family: exp
+    floor: 0.1
+    tau: 0.1379
+  parent_family:
+    family: exp
+    floor: 0.1
+    tau: 0.0248
+  functional_parent:
+    family: flat
+    floor: 0.1
+segment_boost:
+  functional_group_classes: 0.0372
+  functional_parent: 0.5511
+  parent_family: 0.0249
+  roles: 0.2131
+segment_boost_formats:
+- none
+- verbatim
+answer_lines: {$ref: answer-lines-molecule.yaml}
+context: {$ref: context-molecule.yaml}
+grammar: {$ref: grammar-molecule.yaml}

@@ -1,0 +1,12 @@
+# ridge.yaml for the staggered xattn connector: the residue recipe's pooled vectors, fit at its write layers and layer 0.
+destination: mine/qwen/ridge-staggered
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+input: {recipe: esmc-300m-res, layers: [30]}
+encoder: {$ref: esmc-300m-res.yaml}
+embeddings: [{$pin: mine/esmc-300m-res/embeddings}]
+targets: {$pin: mine/qwen/capture-staggered}
+target: name
+layers: [0, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+fit_set: {$pin: mine/items-train}
+alphas: [1.0, 10.0, 100.0, 1000.0]
+folds: 2

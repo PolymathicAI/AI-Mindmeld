@@ -1,0 +1,20 @@
+# Release smoke suite: configs/suite_specs/gemma-3-4b-it/protein-access.yaml with the minimal eval set
+# of the release data bundle: its domain and item set are cut to 8 objects.
+id: release/protein-access
+kind: yes_no
+domains:
+- name: protein
+  data: {$pin: release/protein/esmc-600m/domain-mini}
+item_set: {$pin: release/protein/esmc-600m/items-mini}
+tasks: [Ribosomal protein, Membrane, RNA-binding, DNA-binding, Transferase, Oxidoreductase, Kinase, Transport, Transcription
+    regulation, Chaperone, Lyase, Ligase, Isomerase, Hydrolase, Cytoplasm, Secreted, Nucleus, Mitochondrion, Cell membrane,
+  Plastid, DNA repair, Photosynthesis, Amino-acid biosynthesis, Protein biosynthesis]
+frame: {id: a5, user: 'Here is an unknown protein, given to you as an embedding:<SLOT:x>. {question}'}
+slots:
+- {name: x, role: object, connector: m}
+conditions:
+- {object: own}
+thinking: false
+capability: score
+params: {}
+answer: {$ref: ../../answers/gemma-3.yaml}

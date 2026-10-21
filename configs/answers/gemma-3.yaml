@@ -1,0 +1,7 @@
+# The Yes/No answer convention of Gemma 3 4B and 12B instruct: one answer format per LLM, shared across its scans,
+# studies, suites and training answer stream (the measured format "combo": the instruction, then the prefix).
+# " Yes" = 8438, " No" = 2301 in both sizes' tokenizer.
+instruction: "Answer with only Yes or No."
+prefix: "Answer:"
+"yes": " Yes"   # quoted: YAML 1.1 reads bare yes / no as booleans
+"no": " No"

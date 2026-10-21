@@ -1,0 +1,8 @@
+# Embeddings of every object with the residue recipe esmc-300m-res.yaml: pooled vectors and per-residue states
+# (latent_interconnect.run.extract), for the xattn connector.
+destination: mine/esmc-300m-res/embeddings
+recipe: {$ref: esmc-300m-res.yaml}
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+objects: {$pin: mine/items-all}
+part_size: 8
+device_class: cpu

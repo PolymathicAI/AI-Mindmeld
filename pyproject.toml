@@ -1,0 +1,109 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "latent-interconnect"
+version = "1.0.0"
+description = "Latent Interconnect Protocol: connectors that let a frozen language model read specialist embeddings."
+readme = "README.md"
+requires-python = ">=3.11"   # encoder workers run in Python 3.11 environments
+license = { text = "Apache-2.0" }
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "torch>=2.4",
+    "pydantic>=2.6",
+    "pyyaml>=6",
+    "pandas>=2.2",
+    "pyarrow>=15",
+    "safetensors>=0.4",
+    "networkx>=3",       # the cross-domain swap matching (build.cross_domain_items); torch requires it too
+]
+
+[project.scripts]
+aimm-chat = "latent_interconnect.chat.cli:main"   # the chat command (examples/guides/chat.md, "Gemma setup and launch")
+
+[project.optional-dependencies]
+hf = ["transformers>=4.57,<5", "accelerate>=1.0", "huggingface_hub>=0.34,<1"]   # generic Hugging Face receiver (device_map="auto" needs accelerate); huggingface_hub: also latent_interconnect.release_download
+# kimi: pinned versions; tiktoken: the pinned snapshot's tokenizer code imports it
+kimi = ["transformers>=4.57.1,<5", "compressed-tensors==0.12.2", "tiktoken>=0.7"]
+vllm = ["vllm==0.28.0"]                  # a separate vllm environment only (transformers 5, so never with kimi)
+dev = ["pytest==9.1.1", "pytest-xdist==3.8.0", "ruff==0.16.10", "mypy==2.4.0", "httpx==0.28.1"]   # pinned: the checks depend on the tool versions; httpx: fastapi.testclient (tests/unit/test_chat.py)
+chat = ["fastapi==0.142.2", "uvicorn==0.54.0"]   # the chat server (latent_interconnect.chat); versions of env/constraints/lip.txt
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["latent_interconnect*"]
+
+[tool.setuptools.package-data]
+latent_interconnect = ["py.typed", "chat/static/*", "release_metadata_exports.json"]   # the release export registry (build.metadata_export)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Style bar (CONTRIBUTING.md). `ruff check` and `ruff format --check` must pass on every commit.
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F",      # pycodestyle, pyflakes
+    "I",                # import order
+    "B",                # bugbear
+    "UP",               # pyupgrade (py311)
+    "SIM",              # simplifications
+    "C4",               # comprehensions
+    "PTH",              # pathlib over os.path
+    "RET",              # return hygiene
+    "ARG",              # unused arguments
+    "D",                # docstrings
+    "ANN",              # annotations
+    "N",                # naming
+    "PL",               # pylint subset
+    "RUF",
+    "T20",              # no print in library code
+    "ERA",              # no commented-out code
+]
+ignore = [
+    "D105", "D107",     # magic methods / __init__ documented on the class
+    "D203", "D213",     # docstring layout: one-blank-before-class off, summary on first line
+    "ANN401",           # Any is allowed where a protocol is genuinely open
+    "PLR0913",          # many-argument constructors are allowed for configs
+    "N803", "N806", "N812",  # math-style capitals (W, K, V) in tensor code; torch.nn.functional as F
+    "RUF001", "RUF002", "RUF003",  # math symbols (α, δ, ×) in docstrings
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "ANN", "PLR", "ARG", "T20", "PLC0415"]
+"examples/{__init__,ask,configure_pipeline,corpus_stream,embed,embed_mimic,esm2_extractor,gated_kind,kmer_extractor,make_domain,rna_domain,summarize_suites}.py" = ["PLR2004"]   # the runnable examples (a `*` would also match the demo client, which keeps all rules)
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["latent_interconnect"]
+mypy_path = "src"
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "yaml", "pandas", "pyarrow", "pyarrow.*", "scipy", "scipy.*", "transformers", "transformers.*", "vllm", "vllm.*",
+    "compressed_tensors", "compressed_tensors.*",
+    "esm.*", "eva.*", "central_dogma.*", "mimic", "unimol_tools", "unimol_tools.*", "rdkit", "rdkit.*",  # encoder environments' libraries
+    "networkx", "networkx.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "gpu: needs a GPU; runs only with --gpu (a GPU job), never in the CPU suite",
+    "e2e: tiny end-to-end pipeline on CPU",
+    "slice: needs the full data under LIP_DATA; runs only with --slice",
+    "long: a long measurement (tens of minutes); runs only with --long",
+]

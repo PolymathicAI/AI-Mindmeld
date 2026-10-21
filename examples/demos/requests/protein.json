@@ -1,0 +1,12 @@
+{
+  "messages": [{"role": "user", "content": "What is the likely molecular function of the protein [[P1]]?"}],
+  "placeholders": {
+    "P1": {
+      "connector": "esmc-600m",
+      "input_type": "sequence",
+      "value": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG"
+    }
+  },
+  "thinking": false,
+  "sampling": {"temperature": 0.0, "max_tokens": 256, "seed": 0}
+}

@@ -1,0 +1,12 @@
+# gemma-3-4b-it's version of suites/kimi-k2.6/mimic-protein-transfer-trained.yaml.
+destination: connectors/gemma-3-4b-it/mimic/protein-transfer/trained
+suite: {$ref: ../../suite_specs/gemma-3-4b-it/protein-transfer.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/mimic/step_002000}
+inputs:
+  m:
+  - {$pin: embeddings/mimic/protein-eval}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

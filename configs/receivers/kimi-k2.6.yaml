@@ -1,0 +1,23 @@
+# Kimi K2.6. Layer L = hidden_states[L]: for L < 61 the input of decoder layer L, where a write at L applies;
+# L = 61 is the final normed output (captures only).
+name: kimi-k2.6
+model_id: moonshotai/Kimi-K2.6
+revision: 7eb5002f6aadc958aed6a9177b7ed26bb94011bb
+depth: 61
+d_model: 7168
+placeholder: " X"
+layers_path: model.layers
+template_kwargs:
+  thinking: {"on": {thinking: true}, "off": {thinking: false}}   # quoted: bare on/off are booleans; default ON
+trust_remote_code: true
+thinking_close: "</think>"   # closes the thinking block: the target part between a scaffold and the answer
+backends:
+  score: kimi-stream
+  capture: kimi-stream
+  train: kimi-ep
+  generate: kimi-vllm
+plugins:
+  - latent_interconnect.receivers.kimi_k26
+# The remote moe_infer is @torch.no_grad: a backend running the model's own code (hf) refuses to train it until
+# kimi_k26.weights.enable_moe_gradients is applied. kimi-ep replaces that code.
+training_preparation: kimi-moe-gradients

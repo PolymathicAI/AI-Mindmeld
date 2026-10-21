@@ -1,0 +1,12 @@
+# ESM-C 600M's final post-LayerNorm layer (hidden_states index 36), mean-pooled, as the paper's connector read it
+# in the original runs. New connectors read the layers chosen from its read-layer study.
+name: esmc-600m-l36
+extractor: esmc
+domain: protein
+model_id: biohub/ESMC-600M
+revision: fcc9d36f5fff97d9bb69a36e3252de61cc78c968   # the original runs' pinned revision
+read: [36]
+pooling: mean
+environment: esmc
+batch_tokens: 32768       # the paper's padded-token budget
+options: {max_residues: 2046}   # the paper's window: the 2,048-token context minus <cls> and <eos>

@@ -1,0 +1,19 @@
+# The chat deployments' smoke test (latent_interconnect.chat.smoke.SmokeConfig): per connector one request by
+# a cached object id and one by a raw value, encoded live, at temperature 0 and a 128-token cap. The ids are
+# objects that a CPU check of the required manifest served from every run's cached embeddings; the raw values are
+# ubiquitin and aspirin.
+inputs:
+  protein:
+    id: A0A011QK89
+    value: MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG
+  molecule: {id: "CHEBI:10002", value: CC(=O)OC1=CC=CC=C1C(=O)O}
+prompts:
+  protein: "Describe the protein [[P1]]: its likely molecular function, domains, cellular localization and organism."
+  molecule: "Describe the molecule [[P1]]: its likely chemical class, functional groups, biological roles and uses."
+sampling: {temperature: 0.0, max_tokens: 128, seed: 0}
+# Live encoders stay resident once loaded (one worker per environment), so the raw requests go from the smallest
+# measured encoder to the largest: a memory failure then costs the fewest cells.
+order: [molformer-c3, esmc-600m, chemfm-1b, pglm-1b, unimol2-1.1b, mimic, esmc-6b]
+# 2,700 s covers a cold Kimi K2.6 load and first generation. A cold encoder took up to 159 s (ESM-C 6B).
+ready_timeout_s: 2700
+request_timeout_s: 900

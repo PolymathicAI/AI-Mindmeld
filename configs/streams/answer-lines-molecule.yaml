@@ -1,0 +1,29 @@
+# How the molecule item-list fields are worded as answers (data.streams.AnswerLine), shared by the text stream
+# (TextParams.answer_lines) and the in-context examples (ContextSpec.answer_lines) of every molecule stream: the line
+# formats of the paper's rendered targets (as stored in the original training field table), which
+# molecule-domain-band-split's item lists read back. `split` is the molecule training set's list separator (its
+# list_fields).
+functional_group_classes:
+  split: '; '
+  one: 'Functional-group class: '
+  many: 'Functional-group classes: '
+  separator: '; '
+  end: .
+parent_family:
+  split: '; '
+  one: 'Parent family: '
+  many: 'Parent families: '
+  separator: '; '
+  end: .
+functional_parent:
+  split: '; '
+  one: 'Functional parent: '
+  many: 'Functional parents: '
+  separator: '; '
+  end: .
+mechanism_roles:
+  split: '; '
+  one: 'Role: '
+  many: 'Roles: '
+  separator: '; '
+  end: .

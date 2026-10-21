@@ -1,0 +1,12 @@
+# gemma-3-12b-it's version of suites/kimi-k2.6/esmc-600m-protein-transfer-trained.yaml.
+destination: connectors/gemma-3-12b-it/esmc-600m/protein-transfer/trained
+suite: {$ref: ../../suite_specs/gemma-3-12b-it/protein-transfer.yaml}
+receiver: {$ref: ../../receivers/gemma-3-12b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-12b-it/esmc-600m/step_002000}
+inputs:
+  m:
+  - {$pin: embeddings/esmc-600m/protein-eval}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

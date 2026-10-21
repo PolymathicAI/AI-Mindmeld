@@ -1,0 +1,26 @@
+# The worked example's connector as three slot tokens of `xattn` maps with staggered write layers (examples/guides/extending.md
+# §6, "Choosing a connector kind"): each write attends over the protein's per-residue ESM-C 300M states with learned
+# queries (latent_interconnect.writes.kinds_residue), so it reads the residue recipe esmc-300m-res.yaml (residues:
+# true) and its extraction. Each token writes at its own three layers, offset by two from the previous token's, the
+# layout of the paper's four-token arms (layers: rule explicit, per_token) on Qwen's 24 layers. The ridge fits must
+# cover every write layer: ridge-staggered.yaml and capture-staggered.yaml. At step 0 (q_init 0) the attention is
+# uniform, so each write is the rank-d_s ridge map of the residue mean. d_s <= min(960, 896) and divisible by heads.
+name: qwen-esmc300m-xattn3
+receiver: qwen2.5-0.5b-instruct
+input: {recipe: esmc-300m-res, layers: [30]}
+tokens:
+  - {target: name}
+  - {target: name}
+  - {target: name}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+    - [4, 10, 16]
+    - [6, 12, 18]
+    - [8, 14, 20]
+kind: xattn
+kind_params: {d_s: 256, heads: 4, d_k: 32}
+alpha: {first: null, init: 0.5, learned: true}
+seed: 0
+layer_choice: {note: "worked CPU example: three tokens staggered by two layers over Qwen's first 20, without a layer study (examples/guides/choosing_layers.md)"}

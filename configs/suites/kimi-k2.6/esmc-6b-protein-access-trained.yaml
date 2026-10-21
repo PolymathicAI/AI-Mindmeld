@@ -1,0 +1,11 @@
+# kimi-k2.6's protein-access suite for the esmc-6b connector at step 2000: the same as
+# esmc-600m-protein-access-trained.yaml beside this file, but on the ESM-C 6B run's checkpoint and the ESM-C 6B [51 | 80]
+# extraction of the same proteins.
+destination: connectors/kimi-k2.6/esmc-6b/protein-access/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/protein-access.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/esmc-6b/step_002000}}
+inputs: {m: [{$pin: embeddings/esmc-6b/protein-eval}]}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

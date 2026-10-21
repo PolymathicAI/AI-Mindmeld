@@ -1,0 +1,9 @@
+# kimi-k2.6's molecule-caption-novel-scaffold suite for the molformer-c3 connector at step 0, on the paper's data.
+destination: connectors/kimi-k2.6/molformer-c3/molecule-caption-novel-scaffold/untrained
+suite: {$ref: ../../suite_specs/kimi-k2.6/molecule-caption-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/molformer-c3/step_000000}}
+inputs: {m: [{$pin: embeddings/molformer-c3/mean-l9-molecule-eval-novel-scaffold}, {$pin: embeddings/molformer-c3/eos-l12-molecule-eval-novel-scaffold}]}
+step: 0
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

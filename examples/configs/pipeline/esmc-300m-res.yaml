@@ -1,0 +1,15 @@
+# Encoder recipe: esmc-300m.yaml with per-residue states kept (residues: true), for a residue map kind (xattn,
+# xblock). The pooled vectors are stored as well, so the ridge fits read the same extraction. A new recipe name: its
+# identity differs from esmc-300m's, and a connector cites its recipe by name.
+name: esmc-300m-res
+extractor: esmc
+domain: protein
+model_id: biohub/ESMC-300M
+revision: e4bac860f0c502cd80f3aeac3d0ce6524c6627cb
+read: [30]
+pooling: mean
+residues: true
+residue_dtype: fp32       # float32 rows (the default bf16 halves the disk use)
+environment: esmc          # run by the ESM-C environment's interpreter: --option python=<that env>/bin/python
+batch_tokens: 8192
+options: {max_residues: 2046}

@@ -1,0 +1,6 @@
+# The step-0 mlp connector (connector-mlp.yaml) from the same ridge maps as init.yaml (latent_interconnect.run.init).
+destination: mine/qwen-mlp/init
+connector: {$ref: connector-mlp.yaml}
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+encoder: {$ref: esmc-300m.yaml}
+ridge: {name: {$pin: mine/qwen/ridge}}

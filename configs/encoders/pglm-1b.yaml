@@ -1,0 +1,11 @@
+# pglm-1b for connectors; the read layers are chosen from its read-layer study.
+name: pglm-1b
+extractor: pglm
+domain: protein
+model_id: biomap-research/proteinglm-1b-mlm
+revision: 676c1bcb9f737c166a25587f83fd580610acb1ad   # the original runs' pinned revision
+read: {$ref: ../shared/read-pglm-1b.yaml}
+pooling: mean
+environment: esmc
+batch_tokens: 32768       # the padded-token budget per batch
+options: {max_residues: 1023}   # the paper's window: the 1,024-token context minus <eos>

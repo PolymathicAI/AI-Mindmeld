@@ -1,0 +1,15 @@
+# The molecule training-time monitor suite of the paper runs: the caption NLL, own and mismatched, on the molecule
+# domain (molecule-domain) and its monitor item set (the monitor members that remain after the domain's exclusions; no
+# refill, no redraw). A record on this set is not numerically comparable with one on a set of other members (other
+# mismatched fillers). A run refuses a monitor suite on another version of its domain (training.config.RunConfig).
+id: molecule/monitor/caption
+kind: caption_nll
+domains: [{name: molecule, data: {$pin: molecule-domain}}]
+item_set: {$pin: items/molecule-training-monitor/item_set}
+tasks: [caption]
+frame: describe
+slots: [{name: x, role: object, connector: m}]
+conditions: [{object: own}, {object: mismatched}]
+thinking: false
+capability: score
+params: {max_target_tokens: 128, mismatch_seed: 0}

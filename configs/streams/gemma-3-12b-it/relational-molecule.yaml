@@ -1,0 +1,52 @@
+# gemma-3-12b-it's version of streams/relational-molecule.yaml: under the receiver's answers.
+answers: molecule
+families:
+  profile: [classes, definition, functional_parent, roles]
+  same_class: [classes]
+  differences: [classes, functional_parent, roles]
+  commonalities: [classes, functional_parent, roles]
+  parent_relation: [functional_parent]
+  odd_one_out_class: [classes]
+prompts:
+  profile: ['Give a short profile of the compound<SLOT:p1>: its chemical classes, what it is derived from and what it does.',
+    'Summarize what is known about<SLOT:p1> in a few sentences.', "<SLOT:p1> \u2014 describe its classification, its relations\
+      \ to other compounds and its roles.", 'Write a brief annotation for the compound<SLOT:p1>.', 'What kind of compound
+      is<SLOT:p1>, what is it related to, and what does it do?']
+  same_class: ['Do the compounds<SLOT:p1> and<SLOT:p2> belong to the same chemical class? Explain.', 'Are<SLOT:p1> and<SLOT:p2>
+      members of one chemical class?', 'Is<SLOT:p1> in the same class as<SLOT:p2>? Answer and say which class or classes.',
+    'Here are two compounds,<SLOT:p1> and<SLOT:p2>. Are they related by class?', "<SLOT:p1> and<SLOT:p2> \u2014 do these two\
+      \ compounds belong to the same chemical class? Explain your answer.", 'Tell me whether the following two compounds belong
+      to the same chemical class, and name the class or classes involved:<SLOT:p1> and<SLOT:p2>.']
+  differences: ['How do the compounds<SLOT:p1> and<SLOT:p2> differ?', 'What are the main differences between<SLOT:p1> and<SLOT:p2>?',
+    'Contrast<SLOT:p1> with<SLOT:p2>.', 'Consider the compounds<SLOT:p1> and<SLOT:p2>. In what ways are they different?',
+    '<SLOT:p1> versus<SLOT:p2>: what are the main differences between these two compounds?']
+  commonalities: ['What do the compounds<SLOT:p1> and<SLOT:p2> have in common?', 'How are<SLOT:p1> and<SLOT:p2> similar?',
+    'Name the similarities between<SLOT:p1> and<SLOT:p2>.', 'Two compounds are given:<SLOT:p1> and<SLOT:p2>. What do they
+      share?', '<SLOT:p1> and<SLOT:p2>: what do these two compounds have in common?']
+  parent_relation: ['Do<SLOT:p1> and<SLOT:p2> derive from the same parent compound?', 'Compare the functional parents of<SLOT:p1>
+      and<SLOT:p2>.', 'How are<SLOT:p1> and<SLOT:p2> related through their parent compounds?', '<SLOT:p1> and<SLOT:p2>: do
+      they derive from the same parent compounds, from related ones, or from unrelated ones?']
+  odd_one_out_class: ['Which of<SLOT:p1>,<SLOT:p2> and<SLOT:p3> is the odd one out by chemical class, and why?', 'Three compounds:<SLOT:p1>,<SLOT:p2>,<SLOT:p3>.
+      Two share a class. Which one does not?', '<SLOT:p1>,<SLOT:p2> and<SLOT:p3> are three compounds, two of which share a
+      chemical class. Which one is the odd one out?', 'Which of these three compounds falls outside the chemical class the
+      other two share:<SLOT:p1>,<SLOT:p2> or<SLOT:p3>?']
+fields: {classes: classes, definition: definition, functional_parent: functional_parent, roles: mechanism_roles, class_graph: class_graph,
+  parent_classes: functional_parent_classes}
+lists: {classes: '; ', functional_parent: '; ', roles: '; ', class_graph: '; ', parent_classes: '; '}
+own_name: name
+sampling: cluster_sqrt
+p_hard: 0.5
+max_target_tokens: 96
+floor: 0.1
+fact_curves:
+  class: {family: exp, floor: 0.1, tau: 0.1379}
+  superclass: {family: exp, floor: 0.1, tau: 0.1379}
+  parent_class: {family: exp, floor: 0.1, tau: 0.1379}
+  definition: {family: exp, floor: 0.1, tau: 2.0891}
+  functional_parent: {family: flat, floor: 0.1}
+  role: {family: exp, floor: 0.1, tau: 0.5917}
+  choice: {family: single_token, floor: 0.1}
+  verdict: null
+grammar: {$ref: ../grammar-molecule.yaml}
+answer: {$ref: ../../answers/gemma-3.yaml}
+instruction: Answer Yes or No, then explain.

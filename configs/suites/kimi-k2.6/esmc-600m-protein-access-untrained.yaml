@@ -1,0 +1,9 @@
+# kimi-k2.6's protein-access suite for the esmc-600m connector at step 0, on the paper's data.
+destination: connectors/kimi-k2.6/esmc-600m/protein-access/untrained
+suite: {$ref: ../../suite_specs/kimi-k2.6/protein-access.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/esmc-600m/step_000000}}
+inputs: {m: [{$pin: embeddings/esmc-600m/protein-eval}]}
+step: 0
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

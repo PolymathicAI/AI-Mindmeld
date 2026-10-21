@@ -1,0 +1,20 @@
+# Gemma 3 4B instruct, the release's receiver, revision pinned at download. Layer L =
+# hidden_states[L]: for L < 34 the input of decoder layer L, where a write at L applies; L = 34 the final normed output
+# (captures only). AutoModelForCausalLM loads it as Gemma3ForConditionalGeneration (vision tower included, transformers
+# 4.57.6): hf reads the text decoder get_decoder() names (model.language_model, a Gemma3TextModel) and its text config's
+# width. Weights bf16; no logit softcapping; sliding-window layers (1,024 tokens) 5 to 1 global. Generation ends on id 1
+# (<eos>) or 106 (<end_of_turn>), the model's generation_config.json. No thinking mode: its chat template takes no
+# thinking argument and folds a system message into the first user turn, so it has no thinking close; a trace is cut at
+# its end id. The placeholder " X" is id 1684.
+name: gemma-3-4b-it
+model_id: google/gemma-3-4b-it
+revision: 093f9f388b31de276ce2de164bdc2081324b9767
+depth: 34
+d_model: 2560
+placeholder: " X"
+layers_path: model.language_model.layers
+backends: {score: hf, train: hf, generate: hf, capture: hf}
+template_kwargs: {thinking: {"on": {}, "off": {}}}   # the template takes no thinking argument: thinking_request asks
+# appended to the last user message when a prompt asks the model to reason first (thinking mode)
+thinking_request: "Reason first; give the answer only at the end."
+separator: "\n\n"   # one blank line between a reasoning written as plain text and its answer ("Answer:" follows it)

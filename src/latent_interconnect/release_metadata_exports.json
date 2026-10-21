@@ -1,0 +1,27 @@
+{
+ "exports": {
+  "6314cf2ca50c589a229303a5991ec6e83b5fb76e871276857088d48543f89e77": {
+   "descriptor_sha256": "fd276355f03b243982602a234802b99c38ca1490f94601b00c89145be633bec7",
+   "exported_from": "e3a3887073568fee6c8ef8e9187477b7e9ac4d2d8c3b63e127897e1b286982a2",
+   "receipt_sha256": "566f9c41494c07bd5fb93bc0cc0babed6b16f76f646fb530fd1b43aec487223b",
+   "target_domain": {
+    "data": "1c3c1d8cf604930f72a309217cd17d4728fdc011ed9e15ec874a1abf99569e5a",
+    "name": "protein",
+    "plugins": []
+   },
+   "transformations_sha256": "7c1d4ea02f7dfdd845f29eaab1d710ff1df9a42637fd1f5fbbf6532b43cea69b"
+  },
+  "feabbac061169488f31d19cf0f4a7a08a5bb7290709f91641022aa76057690e8": {
+   "descriptor_sha256": "3475dbb6764ad7336425d2cdc36568a782421ccf28702fb72ef339baa547d32a",
+   "exported_from": "839536925a6f45e3c75003d0bff252b34c6cbfbcc24168d4c2ff8142f1651984",
+   "receipt_sha256": "82b500371e992c27f89858526d437b36a32100bd742a6b6b7fa64b4c0b47f085",
+   "target_domain": {
+    "data": "d680ca774ffdbb7c8604d37366d077023df33b53a1751efd81d99ea83861f3a5",
+    "name": "molecule",
+    "plugins": []
+   },
+   "transformations_sha256": "c13026e85349acad4110aa75526c91b2f2cb08115d14481d9c2f6c9386c1d2c4"
+  }
+ },
+ "format": "aimm-release-export-registry/1"
+}

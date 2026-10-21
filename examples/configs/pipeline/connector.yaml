@@ -1,0 +1,15 @@
+# The connector: one slot token whose writes start from the ridge maps of the name target (latent_interconnect.writes).
+name: qwen-esmc300m
+receiver: qwen2.5-0.5b-instruct
+input: {recipe: esmc-300m, layers: [30]}
+tokens:
+  - {target: name}
+layer0: constant
+layers:
+  rule: explicit
+  per_token:
+    - [4, 8, 12, 16]
+kind: affine
+alpha: {first: null, init: 0.5, learned: true}
+seed: 0
+layer_choice: {note: "worked CPU example: layers spread over the first two thirds of the 24, without a layer study (examples/guides/choosing_layers.md)"}

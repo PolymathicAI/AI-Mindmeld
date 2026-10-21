@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>AI Mindmeld</title>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-logo" viewBox="0 0 64 64">
+      <circle cx="24" cy="32" r="17" class="logo-p"/>
+      <circle cx="40" cy="32" r="17" class="logo-m"/>
+      <path d="M32 17A17 17 0 0 1 32 47A17 17 0 0 1 32 17Z" class="logo-c"/>
+      <path d="M32 22.5l1.92 7.1 5.68 2.4-5.68 2.4-1.92 7.1-1.92-7.1-5.68-2.4 5.68-2.4z" class="logo-s"/>
+    </symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="15" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="9" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-theme" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 4.5a7.5 7.5 0 0 1 0 15z" fill="currentColor"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v5.5M12 7.6v.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-slot" viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="17" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 12h8M12 9.5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h12M12 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></symbol>
+  </defs>
+</svg>
+
+<div id="app" class="app">
+  <header class="topbar">
+    <button type="button" class="icon-btn nav-toggle" id="btn-sidebar" aria-label="Show conversations" aria-controls="sidebar" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+    <div class="brand">
+      <svg class="logo" aria-hidden="true"><use href="#i-logo"/></svg>
+      <span class="brand-title"><span class="brand-ai">AI</span> Mindmeld</span>
+    </div>
+    <span id="health" class="health" role="status" aria-live="polite"></span>
+    <select id="model-picker" class="model-picker" hidden aria-label="Model"></select>
+    <div class="spacer"></div>
+    <button type="button" class="icon-btn" id="btn-about" aria-label="About" title="About"><svg><use href="#i-info"/></svg></button>
+    <button type="button" class="icon-btn" id="btn-settings" aria-label="Sampling settings" title="Sampling and system prompt"><svg><use href="#i-gear"/></svg></button>
+    <button type="button" class="icon-btn" id="btn-theme" aria-label="Theme" title="Theme"><svg><use href="#i-theme"/></svg></button>
+    <button type="button" class="panel-toggle" id="btn-panel" aria-label="Show placeholders" aria-controls="panel" aria-expanded="false"><svg aria-hidden="true"><use href="#i-slot"/></svg><span class="panel-toggle-label">Placeholders</span> <span class="count" id="ph-count">0</span></button>
+  </header>
+  <section class="startup" id="startup" hidden aria-label="Start-up progress">
+    <div class="startup-text" id="startup-text" aria-live="polite"></div>
+    <pre class="mindmeld" id="mindmeld" aria-hidden="true"></pre>
+  </section>
+
+  <div class="layout">
+    <aside class="sidebar drawer-left" id="sidebar" aria-label="Conversations">
+      <div class="side-top"><button type="button" class="btn primary block" id="btn-new">New chat</button><button type="button" class="icon-btn drawer-close" data-drawer-close aria-label="Close conversations"><svg><use href="#i-close"/></svg></button></div>
+      <h2 class="side-h">Notebook</h2>
+      <ul class="conv-list" id="conv-list"></ul>
+      <div class="side-foot">
+        <button type="button" class="btn ghost block" id="btn-export">Export conversation (JSON)</button>
+      </div>
+    </aside>
+
+    <main class="main" id="main">
+      <div class="thread" id="thread">
+        <section class="empty" id="empty" hidden>
+          <p class="empty-kicker">New entry</p>
+          <h1 class="empty-title">Ask <span class="model-name-slot">the model</span> about a protein or a molecule.</h1>
+          <ol class="empty-steps">
+            <li><span class="step-n">1</span><div><strong>Add a placeholder.</strong> Pick a connector, then give a protein sequence, a UniProt accession, a SMILES string or a ChEBI id. It becomes <span class="chip-demo dom-protein">P1</span>.</div></li>
+            <li><span class="step-n">2</span><div><strong>Reference it in your message</strong> as many times as you like. Placeholders stay available for the rest of the conversation, and you can add more in any turn.</div></li>
+            <li><span class="step-n">3</span><div><strong>Send.</strong> The server starts the encoder, embeds the input, runs the connector and injects the result at the placeholder’s slot tokens.</div></li>
+          </ol>
+          <div class="starters" id="starters">
+            <button type="button" class="starter" data-text="What is the likely function of {P}?" data-domain="protein">What is the likely function of <em>this protein</em>?</button>
+            <button type="button" class="starter" data-text="Which organism does {P} most likely come from, and where in the cell is it found?" data-domain="protein">Organism and subcellular location of <em>this protein</em></button>
+            <button type="button" class="starter" data-text="Describe {P}: what kind of compound is it, and what is it used for?" data-domain="molecule">Describe <em>this molecule</em></button>
+          </div>
+        </section>
+        <div class="entries" id="entries"></div>
+      </div>
+
+      <div class="composer-wrap">
+        <div class="edit-banner" id="edit-banner" hidden>
+          <span>Editing your last message. Sending replaces it and the reply after it.</span>
+          <button type="button" class="link-btn" id="btn-cancel-edit">Cancel</button>
+        </div>
+        <div class="composer" id="composer">
+          <div class="draft-chips" id="draft-chips" hidden></div>
+          <div class="input-stack">
+            <div class="input-backdrop" id="input-backdrop" aria-hidden="true"></div>
+            <textarea id="input" rows="1" aria-label="Message" placeholder="Write a message…" spellcheck="true"></textarea>
+          </div>
+          <div class="composer-bar">
+            <button type="button" class="btn ghost add-ph" id="btn-add-ph" title="Add placeholder (Alt+P)"><svg aria-hidden="true"><use href="#i-slot"/></svg><span>Add placeholder</span></button>
+            <label class="switch" title="Reasoning (thinking) on or off">
+              <input type="checkbox" id="thinking-toggle" role="switch">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-label">Thinking <span class="switch-state" id="thinking-state">on</span></span>
+            </label>
+            <label class="switch yn" id="yesno-switch" hidden title="Score the answer probabilities instead of generating, as the evaluation suites do">
+              <input type="checkbox" id="yesno-toggle" role="switch">
+              <span class="track" aria-hidden="true"></span>
+              <span class="switch-label">Yes/No probability <span class="switch-state" id="yesno-state">off</span></span>
+            </label>
+            <div class="spacer"></div>
+            <button type="button" class="btn stop" id="btn-stop" hidden><svg aria-hidden="true"><use href="#i-stop"/></svg><span>Stop</span></button>
+            <button type="button" class="btn primary send" id="btn-send" title="Send (Enter) · Shift+Enter for a new line" disabled><span id="send-label">Send</span><svg aria-hidden="true"><use href="#i-send"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel drawer-right" id="panel" aria-label="Placeholders and connectors">
+      <section class="panel-sec">
+        <div class="panel-h">
+          <h2>Placeholders</h2>
+          <span class="panel-h-actions"><button type="button" class="btn ghost small" id="btn-add-ph-2">Add</button><button type="button" class="icon-btn drawer-close" data-drawer-close aria-label="Close panel"><svg><use href="#i-close"/></svg></button></span>
+        </div>
+        <p class="panel-note">Click a placeholder to insert it at the cursor. Placeholders you have already sent cannot be changed; editing one creates a new id.</p>
+        <ul class="ph-list" id="ph-list"></ul>
+      </section>
+      <section class="panel-sec">
+        <div class="panel-h">
+          <h2>Connectors</h2>
+          <button type="button" class="btn ghost small" id="btn-refresh-config" title="Refresh connector status">Refresh</button>
+        </div>
+        <div id="conn-list" class="conn-list"></div>
+      </section>
+    </aside>
+  </div>
+  <div class="scrim" id="scrim" hidden></div>
+</div>
+
+<!-- Add / edit placeholder -->
+<dialog id="dlg-ph" class="dlg" aria-labelledby="dlg-ph-title">
+  <form id="ph-form" novalidate>
+    <header class="dlg-h">
+      <h2 id="dlg-ph-title"><span id="ph-dlg-verb">New placeholder</span> <span class="ph-id-badge" id="ph-dlg-id">P1</span></h2>
+      <button type="button" class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
+    </header>
+    <div class="dlg-body">
+      <div class="field">
+        <label for="ph-connector">Connector</label>
+        <select id="ph-connector" required></select>
+        <p class="field-note" id="ph-conn-note"></p>
+      </div>
+      <fieldset class="field">
+        <legend>Input type</legend>
+        <div class="seg" id="ph-types" role="radiogroup"></div>
+      </fieldset>
+      <div class="field">
+        <div class="label-row"><label for="ph-value" id="ph-value-label">Value</label><button type="button" class="link-btn" id="ph-example">Use an example</button></div>
+        <textarea id="ph-value" class="mono" rows="5" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="ph-valid"></textarea>
+        <div class="field-row"><span id="ph-valid" class="valid" aria-live="polite"></span><span id="ph-len" class="len"></span></div>
+      </div>
+      <div class="field">
+        <label for="ph-label">Label <span class="opt">(optional, shown on the chip)</span></label>
+        <input id="ph-label" type="text" maxlength="40" autocomplete="off" placeholder="e.g. lysozyme">
+      </div>
+      <div class="check-result" id="ph-result" role="status" hidden></div>
+      <p class="edit-note" id="ph-edit-note" hidden></p>
+    </div>
+    <footer class="dlg-f">
+      <button type="button" class="btn ghost" data-close>Cancel</button>
+      <button type="submit" class="btn primary" id="ph-save">Check &amp; insert</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Placeholder details -->
+<dialog id="dlg-detail" class="dlg" aria-labelledby="dlg-detail-title">
+  <header class="dlg-h">
+    <h2 id="dlg-detail-title">Placeholder</h2>
+    <button type="button" class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div class="dlg-body" id="detail-body" tabindex="-1" autofocus></div>
+  <footer class="dlg-f" id="detail-actions"></footer>
+</dialog>
+
+<!-- Thinking confirmation -->
+<dialog id="dlg-thinking" class="dlg" aria-labelledby="dlg-thinking-title">
+  <form method="dialog">
+    <header class="dlg-h">
+      <h2 id="dlg-thinking-title">Turn on thinking?</h2>
+    </header>
+    <div class="dlg-body">
+      <p><strong>Extended reasoning can degrade performance compared with asking for a direct answer.</strong></p>
+      <p>Direct, focused questions are a good starting point. You can switch thinking back off at any time.</p>
+    </div>
+    <footer class="dlg-f">
+      <button type="submit" value="cancel" class="btn ghost" autofocus>Cancel</button>
+      <button type="submit" value="proceed" class="btn primary">Proceed with thinking on</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Yes/No probability notice, shown when the switch is turned on -->
+<dialog id="dlg-yesno" class="dlg" aria-labelledby="dlg-yesno-title" aria-describedby="yesno-note">
+  <form method="dialog">
+    <header class="dlg-h">
+      <h2 id="dlg-yesno-title">Yes/No probability is on</h2>
+    </header>
+    <div class="dlg-body">
+      <p id="yesno-note"></p>
+      <label class="check-row"><input type="checkbox" id="yesno-notice-off"> Don’t show this again in this browser</label>
+    </div>
+    <footer class="dlg-f">
+      <button type="submit" value="ok" class="btn primary" autofocus>OK</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Settings drawer -->
+<dialog id="dlg-settings" class="dlg drawer-dlg" aria-labelledby="dlg-settings-title">
+  <header class="dlg-h">
+    <h2 id="dlg-settings-title">Generation settings</h2>
+    <button type="button" class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div class="dlg-body" tabindex="-1" autofocus>
+    <div class="field">
+      <div class="label-row"><label for="set-temperature">Temperature</label><input type="number" class="num" id="set-temperature-n" min="0" max="2" step="0.05" aria-label="Temperature value"></div>
+      <input type="range" id="set-temperature" min="0" max="2" step="0.05">
+    </div>
+    <div class="field">
+      <label for="set-max_tokens">Max new tokens</label>
+      <input type="number" id="set-max_tokens" min="1" max="16384" step="1">
+      <p class="field-note">Covers reasoning and answer together.</p>
+    </div>
+    <div class="field">
+      <label for="set-system">System prompt <span class="opt">(optional)</span></label>
+      <textarea id="set-system" rows="5" placeholder="Leave empty for no system turn."></textarea>
+    </div>
+    <p class="field-note">Thinking on/off is the switch in the composer. These settings are saved in this browser.</p>
+  </div>
+  <footer class="dlg-f">
+    <button type="button" class="btn ghost" id="btn-reset-settings">Reset to server defaults</button>
+    <button type="button" class="btn primary" data-close>Done</button>
+  </footer>
+</dialog>
+
+<!-- About -->
+<dialog id="dlg-about" class="dlg wide" aria-labelledby="dlg-about-title">
+  <header class="dlg-h">
+    <h2 id="dlg-about-title">About AI Mindmeld</h2>
+    <button type="button" class="icon-btn" data-close aria-label="Close"><svg><use href="#i-close"/></svg></button>
+  </header>
+  <div class="dlg-body prose" id="about-body" tabindex="-1" autofocus></div>
+  <footer class="dlg-f"><button type="button" class="btn primary" data-close>Close</button></footer>
+</dialog>
+
+<!-- Login -->
+<div class="login" id="login" hidden>
+  <pre class="mindmeld mindmeld-full" id="login-mindmeld" aria-hidden="true"></pre>
+  <form class="login-card" id="login-form">
+    <div class="login-brand"><svg class="logo big" aria-hidden="true"><use href="#i-logo"/></svg><h1><span class="brand-ai">AI</span> Mindmeld</h1></div>
+    <label for="login-token">Access token</label>
+    <input id="login-token" type="password" autocomplete="current-password" required>
+    <p class="login-err" id="login-err" role="alert" hidden></p>
+    <button type="submit" class="btn primary block">Sign in</button>
+  </form>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<script src="mindmeld.js"></script>
+<script src="history.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

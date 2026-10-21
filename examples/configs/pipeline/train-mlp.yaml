@@ -1,0 +1,31 @@
+# train.yaml with the mlp connector (connector-mlp.yaml): the same data, mixture and ten steps.
+destination: mine/qwen-mlp/train
+name: qwen-esmc300m-mlp-tiny
+connector: {$ref: connector-mlp.yaml}
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+encoder: {$ref: esmc-300m.yaml}
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+ridge: {name: {$pin: mine/qwen/ridge}}
+embeddings: [{$pin: mine/esmc-300m/embeddings}]
+training_set: {$pin: mine/protein/training-set}
+mixture:
+  - stream: yes_no
+    share: 0.5
+    params:
+      templates: [{id: y1, user: "Here is a protein:<SLOT:x>. {question} Answer Yes or No."}]
+      questions: {DNA-binding: ["Does this protein bind DNA?"], Membrane: ["Is this protein located in a membrane?"]}
+      sampling: uniform
+      answers: {"yes": "Yes", "no": "No"}
+      weights: {family: single_token, floor: 0.1}
+  - stream: text
+    share: 0.5
+    params:
+      templates: [{id: d1, task: caption, user: "Describe the protein<SLOT:x>."}]
+      sampling: cluster_sqrt
+      max_target_tokens: 32
+      weights: {caption: {family: power, floor: 0.1, tau: 0.001, p: 1.2}}
+steps: 10
+batch: 4
+device_class: cpu
+optimizer: {lr_rel: 0.05, lr_alpha: 0.05, warmup_steps: 2, schedule: constant, weight_decay: 0.0, clip: 1.0}
+checkpoints: {resume_every: 5}

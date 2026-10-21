@@ -1,0 +1,10 @@
+# Item set: the scan items, half of the training objects (latent_interconnect.build.item_selection). The receiver
+# scans score them, and the held-out scan ridge (ridge-heldout.yaml) is fit on the other training objects.
+destination: mine/items-scan
+name: mine/scan
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+splits: [train]
+within: {$pin: mine/items-train}
+max_length: null
+size: 12
+seed: 0

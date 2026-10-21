@@ -1,0 +1,12 @@
+# kimi-k2.6's protein-access suite on the protein domain (protein-domain) and its evaluation item set.
+id: protein-access
+kind: yes_no
+domains: [{name: protein, data: {$pin: protein-domain}}]
+item_set: {$pin: items/protein-eval}
+tasks: [Ribosomal protein, Membrane, RNA-binding, DNA-binding, Transferase, Oxidoreductase, Kinase, Transport, Transcription regulation, Chaperone, Lyase, Ligase, Isomerase, Hydrolase, Cytoplasm, Secreted, Nucleus, Mitochondrion, Cell membrane, Plastid, DNA repair, Photosynthesis, Amino-acid biosynthesis, Protein biosynthesis]
+frame: a5
+slots: [{name: x, role: object, connector: m}]
+conditions: [{object: own}]
+thinking: false
+capability: score
+params: {"yes": "Yes", "no": "No"}

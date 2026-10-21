@@ -1,0 +1,12 @@
+# gemma-3-4b-it's version of suites/kimi-k2.6/unimol2-1.1b-molecule-caption-novel-scaffold-trained.yaml.
+destination: connectors/gemma-3-4b-it/unimol2-1.1b/molecule-caption-novel-scaffold/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/molecule-caption-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/unimol2-1.1b/step_002000}
+inputs:
+  m:
+  - {$pin: embeddings/unimol2-1.1b/molecule-eval-novel-scaffold}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768, pad_every_batch: true}

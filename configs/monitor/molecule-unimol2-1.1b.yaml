@@ -1,0 +1,14 @@
+# monitor/molecule.yaml with the Uni-Mol2 conformer retry (encoders/unimol2-1.1b.yaml:
+# a molecule whose first RDKit embedding fails is embedded again from random starting coordinates): the run's training-time
+# monitor suite, copied beside it unchanged. Nothing else differs from the source, whose header describes it.
+id: molecule/monitor/caption
+kind: caption_nll
+domains: [{name: molecule, data: {$pin: molecule-domain}}]
+item_set: {$pin: items/molecule-training-monitor/item_set}
+tasks: [caption]
+frame: describe
+slots: [{name: x, role: object, connector: m}]
+conditions: [{object: own}, {object: mismatched}]
+thinking: false
+capability: score
+params: {max_target_tokens: 128, mismatch_seed: 0}

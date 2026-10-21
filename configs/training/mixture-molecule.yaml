@@ -1,0 +1,14 @@
+# The paper molecule runs' mixture (training.config.RunConfig.mixture): the original molecule runs' data shares
+# (as in the original MoLFormer-c3, Uni-Mol2 1.1B and ChemFM-1B runs: relational 0.25, text 0.5,
+# Yes/No 0.25) plus the molecule scaffold on the Yes/No rows (../streams/scaffold-molecule.yaml, rate 0.2). The three
+# molecule paper run configs (molformer-c3, unimol2-1.1b, chemfm-1b; 2,000 steps) cite this file as their
+# `mixture`.
+- stream: relational
+  share: 0.25
+  params: {$ref: ../streams/relational-molecule.yaml}
+- stream: text
+  share: 0.5
+  params: {$ref: ../streams/text-molecule.yaml}
+- stream: yes_no
+  share: 0.25
+  params: {$ref: ../streams/yes-no-molecule.yaml}

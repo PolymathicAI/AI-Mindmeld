@@ -1,0 +1,73 @@
+# The Kimi K2.6 x ChemFM-3B multi-token MLP run (2,000 steps): esmc-6b-mlp4-staggered.yaml beside this file,
+# the ESM-C 6B multi-token MLP run, with the molecule side in place of the protein side. Kept from
+# esmc-6b-mlp4-staggered.yaml: the receiver, four name_described tokens at noise 0.03, the layer-0 constants, the
+# map kind and its widths, all 24 write alphas learned (four tokens at the same six layers here), batch 85 in one
+# `loss` call (micro_batch null, as the protein MLP run and the molecule paper runs), the checkpoints, the monitor
+# cadence, checkpointing off, seed 0 and 8xH200. Molecule-specific:
+# - read: ChemFM-3B layer 27, last+mean (6,144; shared/read-chemfm-3b.yaml), pooled;
+# - step-0 ridge: ridges/kimi-k2.6/chemfm-3b (all 61 write layers fit, source floor 9);
+# - data: molecule-domain, molecule-training-set, its training-time monitor
+#   (monitor/molecule.yaml), the ChemFM-3B extractions of those training molecules and monitor items;
+# - mixture: the molecule paper runs' (relational .25, text .5, Yes/No .25; no variant stream);
+# - steps 2,000, and so the weight-decay rule's lambda 2.5e-4 for 2,000 steps (../../training/optimizer.yaml), not
+#   1.0e-4.
+# The write layout and the starting alphas below come from the Kimi single-layer study of ChemFM-3B (record 8d6572f8,
+# numbers 5c0b4521); the write layers are the ordinary ChemFM-1B connector's, 7/13/22/32/49/57, for every token.
+destination: connectors/kimi-k2.6/chemfm-3b-mlp4
+name: chemfm-3b-mlp4
+connector:
+  name: chemfm-3b-mlp4
+  receiver: kimi-k2.6
+  input: {recipe: chemfm-3b, layers: {$ref: ../../shared/read-chemfm-3b.yaml}, combine: concat}
+  tokens:
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+  layer0: constant
+  layers:
+    rule: explicit
+    per_token:  # the ordinary Kimi ChemFM-1B connector's write layers, the same for every token
+      - [7, 13, 22, 32, 49, 57]
+      - [7, 13, 22, 32, 49, 57]
+      - [7, 13, 22, 32, 49, 57]
+      - [7, 13, 22, 32, 49, 57]
+  kind: mlp
+  kind_params: {d_s: 2560, ff_mult: 4}
+  # Starting alphas: the clipped score-weighted rule (0.99 x (score - 0.5) / the largest such excess among the token's
+  # six write layers,
+  # clipped to [0.1, 0.9], six decimals; evaluation.layer_sets.clipped_auroc_weighted_alphas per token), score = the
+  # layer's mean AUROC over the three molecule tasks written alone in the Kimi single-layer study of ChemFM-3B
+  # (record 8d6572f8, numbers 5c0b4521). Write layers: the ordinary Kimi ChemFM-1B connector's, shared by the four
+  # tokens.
+  alpha:
+    first: null
+    init: 0.4
+    learned: true
+    budget: null
+    per_layer: {7: 0.894114, 13: 0.9, 22: 0.338806, 32: 0.121457, 49: 0.1, 57: 0.1}  # every token
+  seed: 0
+  layer_choice: {decisions: [], note: "write layers: the shared Kimi molecule set of the ordinary ChemFM-1B connector,
+      used for all four tokens; the starting alphas come from the Kimi single-layer study of ChemFM-3B (record
+      8d6572f8, numbers 5c0b4521); read ChemFM-3B L27 last+mean"}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/chemfm-3b.yaml}
+domain: {name: molecule, data: {$pin: molecule-domain}}
+ridge: {name_described: {$pin: ridges/kimi-k2.6/chemfm-3b}}
+embeddings:
+  - {$pin: embeddings/chemfm-3b/molecule-train}
+  - {$pin: embeddings/chemfm-3b/molecule-monitor}
+training_set: {$pin: molecule-training-set/training_set}
+mixture: {$ref: ../../training/mixture-molecule.yaml}
+steps: 2000
+# Batch 85 in one `loss` call, as the protein MLP run (MLP and linear connectors do not split the batch) and the
+# molecule paper runs. If this connector runs out of memory, split it (micro_batch 43), as the protein rule does.
+batch: 85
+micro_batch: null
+seed: 0
+device_class: 8xH200
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+eval_suite: {$ref: ../../monitor/molecule.yaml}
+eval_every: 200
+checkpointing: false

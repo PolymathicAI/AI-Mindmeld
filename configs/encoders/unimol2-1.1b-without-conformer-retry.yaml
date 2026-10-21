@@ -1,0 +1,22 @@
+# unimol2-1.1b for the read-layer scan: pooled states at every layer (0 = the first block's input ... 64 = the
+# last block's output). Model, conformers and pooling are the single-layer Uni-Mol2 recipe's (padding: isolated,
+# crop: false); only read differs. Holding 65 layers adds hook storage over the single-layer recipe: the pair budget
+# is kept; lower it if read: all runs out of GPU memory.
+# Also the recipe of the Uni-Mol2 connectors (connector, ridge, init, run, training-time monitor and evaluation-N extractions),
+# which read layer 23 of it (shared/read-unimol2-1.1b.yaml), as the MIMIC connectors read their all-layer recipe:
+# the training embeddings are this recipe's one extraction job of the training molecules (one artifact; the
+# layer-selection scan and the training embeddings each name a registration of it).
+name: unimol2-1.1b
+extractor: unimol2
+domain: molecule
+model_id: unimolv2/1.1B   # unimol_tools model_name / model_size
+revision: 48e1ba230119a5f286b81dd71bec4889aebebffa03e66d9241f3ceb7bede9a5e   # sha256 of modelzoo/1.1B/checkpoint.pt
+read: all
+pooling: cls+mean
+environment: smallmol
+batch_tokens: 2097152     # the pair budget per batch (molecules x padded length^2), the single-layer recipe's
+options:
+  unimol_tools: 0.1.6
+  padding: isolated
+  crop: false
+  batch_molecules: 32

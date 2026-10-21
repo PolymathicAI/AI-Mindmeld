@@ -1,0 +1,12 @@
+# Encoder read-layer scan: cross-validated ridge probes of the Yes/No tasks from each read layer's pooled embedding,
+# on the training objects (latent_interconnect.run.read_scan; CPU). examples/guides/choosing_layers.md §3 reads it.
+destination: mine/esmc-300m-layers/read-scan
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+encoder: {$ref: esmc-300m-layers.yaml}
+embeddings: [{$pin: mine/esmc-300m-layers/embeddings}]
+layers: [0, 6, 12, 18, 24, 30]
+labels: [DNA-binding, Membrane, Transferase, Mammalia]
+objects: {$pin: mine/items-train}
+folds: 3
+seed: 0
+alphas: [1.0, 10.0, 100.0, 1000.0]

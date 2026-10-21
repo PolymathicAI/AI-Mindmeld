@@ -1,0 +1,11 @@
+# esmc-600m for connectors; the read layers are chosen from its read-layer study.
+name: esmc-600m
+extractor: esmc
+domain: protein
+model_id: biohub/ESMC-600M   # HF re-release of esmc-600m-2024-12 (the original runs' model)
+revision: fcc9d36f5fff97d9bb69a36e3252de61cc78c968   # the original runs' pinned revision
+read: {$ref: ../shared/read-esmc-600m.yaml}
+pooling: mean
+environment: esmc
+options: {max_residues: 2046}   # the paper's window: the 2,048-token context minus <cls> and <eos>
+batch_tokens: 32768       # the padded-token budget per batch

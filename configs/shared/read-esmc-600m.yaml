@@ -1,0 +1,6 @@
+# The read layers of esmc-600m: [33, 36], token mean at each, concatenated (the citing inputs' combine: concat;
+# 1,152 + 1,152 = 2,304 dims): the chosen read, as the joint read-layer scan measured it. One home for one choice:
+# the recipe's read (encoders/esmc-600m.yaml), the connectors' input.layers (connectors/*/esmc-600m.yaml), the prep
+# ridges' input.layers (ridges/*/esmc-600m.yaml), and the layer-selection study's held-out scan ridge cite it by
+# $ref.
+[33, 36]

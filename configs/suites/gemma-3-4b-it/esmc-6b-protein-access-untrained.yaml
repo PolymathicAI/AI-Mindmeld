@@ -1,0 +1,12 @@
+# gemma-3-4b-it's version of suites/kimi-k2.6/esmc-6b-protein-access-untrained.yaml.
+destination: connectors/gemma-3-4b-it/esmc-6b/protein-access/untrained
+suite: {$ref: ../../suite_specs/gemma-3-4b-it/protein-access.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/esmc-6b/step_000000}
+inputs:
+  m:
+  - {$pin: embeddings/esmc-6b/protein-eval}
+step: 0
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768, pad_every_batch: true}

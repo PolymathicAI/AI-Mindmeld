@@ -1,0 +1,18 @@
+# molformer-c3's <eos> state at the final layer 12 (the special tokens, separately, at the final layer; the
+# <bos> is the cls half of the read-layer scan recipe's cls+mean): the tokenizer's template is <bos> SMILES <eos>, so
+# pooling `last` is the <eos> (extractors/molformer.py; truncation keeps it). Model, code, tokenizer and batching are
+# the read-layer scan recipe's; only read and pooling differ.
+name: molformer-c3-eos-l12
+extractor: molformer
+domain: molecule
+model_id: DeepChem/MoLFormer-c3-1.1B
+revision: 9f1b9ea3590833bd0ea1a70e789c5d3da11ba7ed
+read: [12]
+pooling: last
+environment: smallmol
+batch_tokens: 202         # one molecule at a time: the budget is the per-molecule cap
+options:
+  code_model_id: ibm-research/MoLFormer-XL-both-10pct
+  code_revision: 7b12d946c181a37f6012b9dc3b002275de070314
+  max_tokens: 202
+  batch_molecules: 1

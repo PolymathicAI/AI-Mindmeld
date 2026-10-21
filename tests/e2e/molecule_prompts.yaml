@@ -1,0 +1,26 @@
+# The molecule domain's prompt frames and capture recipes (the paper's molecule runs' prompts), read by
+# tests/e2e/test_tiny_pipeline.py for its molecule chain.
+frames:
+  - id: a5         # the Yes/No frame (the original molecule evaluation frame + question + " Answer Yes or No.")
+    user: "Here is an unknown compound, given to you as an embedding:<SLOT:x>. {question} Answer Yes or No."
+  - id: describe   # the training and capture prompt (the original molecule training prompt)
+    user: "Here is an unknown compound, given to you as an embedding:<SLOT:x>. Describe what this compound is and what it does."
+recipes:   # capture recipes; {noun} is the domain's noun, "compound"
+  - name: name             # the original name state of the paper's molecule ridges (the original
+    messages:              # molecule training prompt, the name in the slot)
+      - {role: user, text: "Here is an unknown {noun}, given to you as an embedding: {name}. Describe what this {noun} is and what it does."}
+    read: name
+  - name: caption          # the protein caption recipe's counterpart: the caption target as the answer, its token mean
+    messages:              # as the target. No original molecule caption state exists; cap as the protein recipe's.
+      - {role: user, text: "Here is an unknown {noun}, given to you as an embedding: {name}. Describe what this {noun} is and what it does."}
+      - {role: assistant, text: "{context}"}
+    read: context
+    context_field: definition
+    context_tokens: 4096
+    target: mean
+  - name: name_described   # the description-primed name state (the definition, then the name), noun "compound";
+    messages:              # molecules keep `name` unless this recipe improves on it
+      - {role: user, text: "{context} This is the description of the {noun}: {name}"}
+    read: name
+    context_field: definition
+    context_tokens: 64

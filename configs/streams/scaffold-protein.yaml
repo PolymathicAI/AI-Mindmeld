@@ -1,0 +1,1712 @@
+# The protein property-first reasoning scaffold (data.scaffold.ScaffoldSpec).
+# Converted from the original protein runs' property-first reasoning scaffold:
+#   rate 0.2: a little less reasoning-prompt help than the original protein runs (they used 0.3);
+#   questions: the 24 trained Yes/No keyword questions (original qtypes "yesno") and the location question (qtype
+#     "location"); task ids are the original names, as the original domain catalog names them;
+#   facts: the original fields in order (field -> field, keywords_choice -> choice, ec_class -> field_class on "ec",
+#     keywords_list -> labels, keywords_or_field -> labels_or_field);
+#   omit: the original yesno_exclusions.fields per keyword, and the facts whose exclude_qtypes list "location";
+#   drop: the original yesno_exclusions.drop per keyword (P(Yes | fact) > 0.9 or < 0.1), and for location the union over
+#     qtype_drop_keywords.location; each value in the casing this package shows it ("Process=dNA
+#     repair", the original keywords_or_field casing, is "Process=DNA repair"; ScaffoldSpec refuses a value no fact can
+#     produce); matched item by item on list values;
+#   value_weight 1.0 (the original scaffold weight), floor 0.1 (the original loss-weight floor), fact_max_tokens 40
+#     (fact_cap_tokens), max_tokens 160 (the original scaffold cap's default);
+#   instructions_heldout are not training text (evaluation only) and are not carried here.
+rate: 0.2
+questions:
+- Membrane
+- Cytoplasm
+- Secreted
+- Mitochondrion
+- Nucleus
+- Cell membrane
+- Plastid
+- Transferase
+- Oxidoreductase
+- Lyase
+- Ligase
+- Isomerase
+- Hydrolase
+- Kinase
+- DNA-binding
+- RNA-binding
+- Transport
+- Transcription regulation
+- Chaperone
+- Ribosomal protein
+- DNA repair
+- Photosynthesis
+- Amino-acid biosynthesis
+- Protein biosynthesis
+- location
+instructions:
+- 'The slot is an embedding of an unknown protein, produced by another model; it is not a name. Use the embedding itself:
+  note a few of its properties (location, membrane or secreted, enzyme class, function type, process), then answer.'
+- 'What sits in the slot is a protein embedding from a separate model, not a name or a word. Work from the embedding: note
+  a few properties (location, membrane or secreted, enzyme class, function type, process), then answer.'
+- Treat the slot as an embedding of an unknown protein made by another model, not as text. First note a few of its properties
+  (location, membrane or secreted, enzyme class, function type, process), then answer.
+- The slot encodes an unknown protein as an embedding from another model rather than as a word. From that embedding, note
+  some of its properties (location, membrane or secreted, enzyme class, function type, process) and then give the answer.
+stances:
+- I'll infer properties from this protein embedding.
+- Inferring properties from the protein embedding.
+- Reading properties off the protein embedding.
+- I'll work from this protein embedding.
+facts:
+- key: location
+  label: Location
+  source: field
+  field: subcellular_location
+  split: '; '
+  lower_first: true
+- key: membrane_secreted
+  label: Membrane or secreted
+  source: choice
+  choices:
+    Membrane: membrane
+    Secreted: secreted
+  both: membrane and secreted
+- key: enzyme_class
+  label: Enzyme class
+  source: field_class
+  field: ec
+  classes:
+    '1': oxidoreductase
+    '2': transferase
+    '3': hydrolase
+    '4': lyase
+    '5': isomerase
+    '6': ligase
+    '7': translocase
+- key: function_type
+  label: Function type
+  source: labels
+  tasks:
+  - DNA-binding
+  - RNA-binding
+  - Transcription regulation
+  - Transport
+  - Chaperone
+  - Kinase
+  - Ribosomal protein
+  max_items: 3
+- key: process
+  label: Process
+  source: labels_or_field
+  tasks:
+  - DNA repair
+  - Photosynthesis
+  - Amino-acid biosynthesis
+  - Protein biosynthesis
+  max_items: 2
+  field: pathway
+  split: '; '
+n_facts:
+- 1
+- 3
+value_weight: 1.0
+floor: 0.1
+fact_max_tokens: 40
+max_tokens: 160
+itemwise: [labels, labels_or_field]   # drops match list values item by item
+omit:
+  Membrane:
+  - location
+  - membrane_secreted
+  Cytoplasm:
+  - location
+  - membrane_secreted
+  Secreted:
+  - location
+  - membrane_secreted
+  Mitochondrion:
+  - location
+  - membrane_secreted
+  Nucleus:
+  - location
+  - membrane_secreted
+  Cell membrane:
+  - location
+  - membrane_secreted
+  Plastid:
+  - location
+  - membrane_secreted
+  Transferase:
+  - enzyme_class
+  Oxidoreductase:
+  - enzyme_class
+  Lyase:
+  - enzyme_class
+  Ligase:
+  - enzyme_class
+  Isomerase:
+  - enzyme_class
+  Hydrolase:
+  - enzyme_class
+  Kinase:
+  - enzyme_class
+  DNA repair:
+  - process
+  Photosynthesis:
+  - process
+  Amino-acid biosynthesis:
+  - process
+  Protein biosynthesis:
+  - process
+  location:
+  - location
+  - membrane_secreted
+drop:
+  Membrane:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted, extracellular space
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=aromatic compound metabolism
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=isoprenoid biosynthesis
+  - Process=metabolic intermediate biosynthesis
+  - Process=nitrogen metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=purine metabolism
+  - Process=tRNA modification
+  Cytoplasm:
+  - Enzyme class=translocase
+  - Function type=ribosomal protein
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, cytosol
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Process=aromatic compound metabolism
+  - Process=carbohydrate biosynthesis
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=photosynthesis
+  - Process=quinol/quinone metabolism
+  Secreted:
+  - Enzyme class=ligase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=mitochondrion
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate metabolism
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=tRNA modification
+  Mitochondrion:
+  - Location=cell inner membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=mitochondrion
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=periplasm
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=secreted
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate degradation
+  - Process=cell wall biogenesis
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=mycotoxin biosynthesis
+  - Process=nucleotide-sugar biosynthesis
+  - Process=photosynthesis
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Nucleus:
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=translocase
+  - Function type=transcription regulation
+  - Location=cell inner membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=membrane
+  - Location=mitochondrion membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  Cell membrane:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=mitochondrion
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, extracellular space
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=glycan degradation
+  - Process=isoprenoid biosynthesis
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Plastid:
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, cytosol
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=protein modification
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Transferase:
+  - Enzyme class=hydrolase
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, nucleoid
+  - Location=mitochondrion inner membrane
+  - Location=periplasm
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=secreted
+  - Process=bacterial outer membrane biogenesis
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=metabolic intermediate biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=photosynthesis
+  - Process=protein modification
+  - Process=quinol/quinone metabolism
+  - Process=tRNA modification
+  Oxidoreductase:
+  - Enzyme class=hydrolase
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Location=cell outer membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=host cytoplasm
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=nucleus, nucleolus
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Process=alkaloid biosynthesis
+  - Process=amino-acid degradation
+  - Process=aromatic compound metabolism
+  - Process=carbohydrate biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=mycotoxin biosynthesis
+  - Process=protein biosynthesis
+  - Process=secondary metabolite biosynthesis
+  Lyase:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=carbohydrate degradation
+  - Process=cell wall biogenesis
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycolipid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=nitrogen metabolism
+  - Process=phospholipid metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Ligase:
+  - Enzyme class=hydrolase
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-sugar metabolism
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=phospholipid metabolism
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=tRNA modification
+  Isomerase:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=cell inner membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=endoplasmic reticulum lumen
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=mitochondrion
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-sugar metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=pyrimidine metabolism
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Hydrolase:
+  - Enzyme class=hydrolase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=translocase
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=lysosome
+  - Location=plastid, chloroplast thylakoid membrane
+  - Process=carbohydrate metabolism
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=photosynthesis
+  - Process=porphyrin-containing compound metabolism
+  - Process=quinol/quinone metabolism
+  - Process=tRNA modification
+  Kinase:
+  - Enzyme class=hydrolase
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Location=apical cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=mitochondrion inner membrane
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=tRNA modification
+  DNA-binding:
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=golgi apparatus membrane
+  - Location=host membrane
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=periplasm
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  RNA-binding:
+  - Enzyme class=isomerase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=translocase
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=periplasm
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=cell wall biogenesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  Transport:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=ribosomal protein
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, nucleoid
+  - Location=lysosome
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=antibiotic biosynthesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=glycan degradation
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nucleotide-sugar biosynthesis
+  - Process=phospholipid metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=tRNA modification
+  Transcription regulation:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum lumen
+  - Location=host membrane
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=nucleus
+  - Location=periplasm
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Process=alkaloid biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Chaperone:
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Location=apical cell membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=endoplasmic reticulum lumen
+  - Location=golgi apparatus membrane
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=mitochondrion outer membrane
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Ribosomal protein:
+  - Enzyme class=hydrolase
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  DNA repair:
+  - Enzyme class=oxidoreductase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=ribosomal protein
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Photosynthesis:
+  - Enzyme class=hydrolase
+  - Enzyme class=isomerase
+  - Enzyme class=transferase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, cytosol
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Amino-acid biosynthesis:
+  - Enzyme class=lyase
+  - Enzyme class=translocase
+  - Function type=RNA-binding
+  - Function type=chaperone
+  - Function type=ribosomal protein
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  Protein biosynthesis:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=lyase
+  - Enzyme class=oxidoreductase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=chaperone
+  - Function type=kinase
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum
+  - Location=endoplasmic reticulum lumen
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host cytoplasm
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=lysosome
+  - Location=membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=secreted, extracellular space
+  - Location=secreted, extracellular space, extracellular matrix
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=alkaloid biosynthesis
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=antibiotic biosynthesis
+  - Process=aromatic compound metabolism
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=carbohydrate metabolism
+  - Process=cell wall biogenesis
+  - Process=cofactor biosynthesis
+  - Process=cofactor metabolism
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan biosynthesis
+  - Process=glycan degradation
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=isoprenoid biosynthesis
+  - Process=lipid metabolism
+  - Process=membrane lipid metabolism
+  - Process=metabolic intermediate biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=nitrogen metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=purine metabolism
+  - Process=pyrimidine metabolism
+  - Process=quinol/quinone metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=sulfur metabolism
+  - Process=tRNA modification
+  location:
+  - Enzyme class=isomerase
+  - Enzyme class=ligase
+  - Enzyme class=translocase
+  - Function type=DNA-binding
+  - Function type=RNA-binding
+  - Function type=ribosomal protein
+  - Function type=transcription regulation
+  - Function type=transport
+  - Location=apical cell membrane
+  - Location=cell inner membrane
+  - Location=cell membrane
+  - Location=cell outer membrane
+  - Location=cellular thylakoid membrane
+  - Location=cytoplasm
+  - Location=cytoplasm, nucleoid
+  - Location=endoplasmic reticulum membrane
+  - Location=golgi apparatus membrane
+  - Location=host membrane
+  - Location=host nucleus
+  - Location=membrane
+  - Location=mitochondrion inner membrane
+  - Location=mitochondrion matrix
+  - Location=mitochondrion membrane
+  - Location=mitochondrion outer membrane
+  - Location=nucleus
+  - Location=nucleus, nucleolus
+  - Location=periplasm
+  - Location=plastid, chloroplast
+  - Location=plastid, chloroplast stroma
+  - Location=plastid, chloroplast thylakoid membrane
+  - Location=secreted, extracellular space
+  - Location=vacuole membrane
+  - Location=virion membrane
+  - Membrane or secreted=membrane
+  - Membrane or secreted=membrane and secreted
+  - Membrane or secreted=secreted
+  - Process=amine and polyamine biosynthesis
+  - Process=amino-acid biosynthesis
+  - Process=amino-acid degradation
+  - Process=amino-sugar metabolism
+  - Process=aromatic compound metabolism
+  - Process=carbohydrate biosynthesis
+  - Process=carbohydrate degradation
+  - Process=DNA repair
+  - Process=energy metabolism
+  - Process=glycan degradation
+  - Process=isoprenoid biosynthesis
+  - Process=metabolic intermediate biosynthesis
+  - Process=nitrogen metabolism
+  - Process=phospholipid metabolism
+  - Process=photosynthesis
+  - Process=purine metabolism
+  - Process=tRNA modification
+  - Location=cytoplasm, cytoskeleton
+  - Location=cytoplasm, cytoskeleton, microtubule organizing center, centrosome
+  - Location=cytoplasm, cytosol
+  - Location=endoplasmic reticulum lumen
+  - Location=host cytoplasm
+  - Location=lysosome
+  - Location=mitochondrion
+  - Location=secreted
+  - Location=secreted, cell wall
+  - Location=virion
+  - Process=cofactor metabolism
+  - Process=glycan metabolism
+  - Process=glycolipid biosynthesis
+  - Process=mycotoxin biosynthesis
+  - Process=quinol/quinone metabolism
+  - Enzyme class=transferase
+  - Function type=chaperone
+  - Function type=kinase
+  - Location=secreted, extracellular space, extracellular matrix
+  - Process=alkaloid biosynthesis
+  - Process=antibiotic biosynthesis
+  - Process=bacterial outer membrane biogenesis
+  - Process=carbohydrate metabolism
+  - Process=cofactor biosynthesis
+  - Process=glycan biosynthesis
+  - Process=membrane lipid metabolism
+  - Process=nucleotide-sugar biosynthesis
+  - Process=one-carbon metabolism
+  - Process=polyol metabolism
+  - Process=porphyrin-containing compound metabolism
+  - Process=protein biosynthesis
+  - Process=protein modification
+  - Process=pyrimidine metabolism
+  - Process=secondary metabolite biosynthesis
+  - Process=cell wall biogenesis
+  - Process=sulfur metabolism
+  - Enzyme class=lyase
+  - Process=lipid metabolism
+  - Location=endoplasmic reticulum

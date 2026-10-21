@@ -1,0 +1,20 @@
+# Yes/No scores of the init connector on the val and test objects: a trained task and the held-out task, with the
+# object's embedding (own) and with its name written in the prompt instead (name) (latent_interconnect.run.suite).
+destination: mine/qwen/suite-init
+suite:
+  id: mine/yes-no
+  kind: yes_no
+  domains: [{name: protein, data: {$pin: mine/protein-domain}}]
+  item_set: {$pin: mine/items-eval}
+  tasks: [DNA-binding, Membrane, Mammalia]
+  frame: a5
+  slots: [{name: x, role: object, connector: x}]
+  conditions: [{object: own}, {object: name}]
+  capability: score
+  params: {"yes": "Yes", "no": "No"}  # quoted keys: YAML 1.1 reads bare yes/no as booleans; one token each
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+checkpoints: {x: {$pin: mine/qwen/init}}
+inputs: {x: [{$pin: mine/esmc-300m/embeddings}]}
+step: 0
+device_class: cpu
+plan: {pad_every_batch: true}  # hf pads, so a scoring suite on it must state pad_every_batch (examples/guides/batching.md)

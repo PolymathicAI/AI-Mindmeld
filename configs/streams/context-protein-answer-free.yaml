@@ -1,0 +1,101 @@
+# context-protein.yaml without answer labels, for a yes_no stream under an answer convention (data.context.Context
+# cue): every example answer is led by the convention's prefix (Yes/No: prefix + answer text, as the assistant turn
+# reads it; text: prefix, a space, the text), so the line formats carry the object and question labels only (each
+# format's answer label removed, in order). Everything else is context-protein.yaml's.
+rate: 0.8
+roles:
+- You answer questions about proteins that are given as embedding tokens in place of their names.
+- Each protein here is shown as an embedding token instead of its name, and you answer questions about it.
+- You are an assistant that reads proteins from embedding tokens that stand in for their names.
+- Proteins in this conversation appear as embedding tokens rather than names.
+- You work with proteins that are identified by embedding tokens instead of names.
+- An embedding token takes the place of each protein's name in the questions you answer.
+- You answer each question about the protein that its embedding token stands for.
+- You are a protein expert who is shown proteins as embedding tokens, not names.
+- In this task every protein is given as an embedding token rather than by name.
+headers:
+- - 'Examples:'
+  - 'Example:'
+- - 'For reference:'
+  - 'For reference:'
+- - 'Example answers:'
+  - 'Example answer:'
+- - 'Sample questions and answers:'
+  - 'Sample question and answer:'
+- - 'Worked examples:'
+  - 'Worked example:'
+- - 'Reference answers:'
+  - 'Reference answer:'
+- - 'Known answers:'
+  - 'Known answer:'
+formats:
+- text: "Protein:{object}\nQuestion: {question}\n{answer}"
+  separator: "\n\n"
+- text: "-{object}: \"{question}\" -> \"{answer}\""
+  separator: "\n"
+- text: "Example protein:{object}\nQ: {question}\n{answer}"
+  separator: "\n\n"
+- text: "Input:{object}. {question}\n{answer}"
+  separator: "\n\n"
+- text: "Protein{object} | {question} | {answer}"
+  separator: "\n"
+- text: "For{object}, the question \"{question}\": {answer}"
+  separator: "\n"
+- text: "Q (protein{object}): {question}\n{answer}"
+  separator: "\n\n"
+structures:
+- id: inject_same
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+- id: named_same+inject_other
+  weight: 0.25
+  examples:
+  - - named
+    - same
+  - - inject
+    - other
+- id: inject_same+named_other
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+  - - named
+    - other
+- id: inject_same+inject_other
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+  - - inject
+    - other
+example_questions:
+  describe: Describe this protein.
+  function: What does it do?
+  family: What family is it in?
+  location: Where is it found in the cell?
+  subunit: What is its subunit structure?
+  catalytic: Which reaction does it catalyze?
+  pathway: What does UniProt list as its pathway?
+  ec: What is its EC number?
+name_field: name
+pool_tasks:
+- function
+- family
+- location
+- subunit
+- catalytic
+- pathway
+- ec
+pool:
+  size: 1000
+  seed: 0
+  generic_names: ^(Uncharacterized|Putative|Probable uncharacterized|UPF\d|Protein of unknown function)
+  max_name_chars: 60
+  min_tasks: 3
+  answer_sentences: 2
+  answer_tokens: 48
+  unsplit_fields:
+  - catalytic_activity
+  - ec

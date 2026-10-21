@@ -1,0 +1,14 @@
+# The held-out scan ridge: ridge.yaml's maps fit on the training objects minus the scan items (exclude), from the
+# final layer of esmc-300m-layers.yaml (latent_interconnect.run.ridge). The study writes its predictions.
+destination: mine/qwen/ridge-heldout
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+input: {recipe: esmc-300m-layers, layers: [30]}
+encoder: {$ref: esmc-300m-layers.yaml}
+embeddings: [{$pin: mine/esmc-300m-layers/embeddings}]
+targets: {$pin: mine/qwen/capture}
+target: name
+layers: [0, 4, 8, 12, 16, 20]
+fit_set: {$pin: mine/items-train}
+alphas: [1.0, 10.0, 100.0, 1000.0]
+folds: 2
+exclude: {$pin: mine/items-scan}

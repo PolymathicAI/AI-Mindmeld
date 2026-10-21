@@ -1,0 +1,6 @@
+# The step-0 staggered xattn connector from the staggered ridge fits (latent_interconnect.run.init).
+destination: mine/qwen-xattn3/init
+connector: {$ref: connector-xattn-3tok-staggered.yaml}
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+encoder: {$ref: esmc-300m-res.yaml}
+ridge: {name: {$pin: mine/qwen/ridge-staggered}}

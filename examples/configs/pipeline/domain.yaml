@@ -1,0 +1,32 @@
+# The domain-stage config of the worked pipeline (examples/guides/extending.md §6; latent_interconnect.run.domain.DomainBuild).
+# examples/make_domain.py writes the four source files and a copy of this file with their paths and sha256 filled in;
+# run the stage on that copy. Labels, tasks, frames and recipes are a small subset of the paper's protein domain.
+destination: mine/protein-domain
+domain: protein
+spec:
+  table: {path: filled-in-by-make_domain.py, sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  annotations: {path: filled-in-by-make_domain.py, sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  split: {path: filled-in-by-make_domain.py, sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  clusters: {path: filled-in-by-make_domain.py, sha256: "0000000000000000000000000000000000000000000000000000000000000000"}
+  fields: {caption: "table:caption", keywords: "table:keywords"}
+  labels:
+    - {column: "kw:DNA-binding", rule: keyword, value: "DNA-binding"}
+    - {column: "kw:Membrane", rule: keyword, value: "Membrane"}
+    - {column: "kw:Transferase", rule: keyword, value: "Transferase"}
+    - {column: "lineage:Mammalia", rule: lineage, value: "Mammalia"}
+  tasks:   # trained tasks may appear in training text; a held_out task is screened out of it (training_set.yaml)
+    - {id: DNA-binding, kind: yes_no, question: "Does this protein bind DNA?", label: "kw:DNA-binding", scope: trained}
+    - {id: Membrane, kind: yes_no, question: "Is this protein located in a membrane?", label: "kw:Membrane", scope: trained}
+    - {id: Transferase, kind: yes_no, question: "Is this protein a transferase enzyme?", label: "kw:Transferase", scope: trained}
+    - {id: Mammalia, kind: yes_no, question: "Is this protein from a mammal?", label: "lineage:Mammalia", scope: held_out}
+    - {id: caption, kind: text, question: "", label: caption, scope: trained}
+  frames:
+    - id: a5
+      user: "Here is an unknown protein, given to you as an embedding:<SLOT:x>. {question} Answer Yes or No."
+    - id: describe
+      user: "Here is an unknown protein, given to you as an embedding:<SLOT:x>. Describe what this protein is and what it does."
+  recipes:   # capture recipes: the receiver's state at the name's tokens is the ridge target of a connector token
+    - name: name
+      messages:
+        - {role: user, text: "Here is an unknown {noun}, given to you as an embedding: {name}. Describe what this {noun} is and what it does."}
+      read: name

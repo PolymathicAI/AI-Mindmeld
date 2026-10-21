@@ -1,0 +1,12 @@
+# kimi-k2.6's molecule-access-novel-scaffold suite for the unimol2-1.1b connector at step 0, on the paper's data. Its inputs are
+# the Uni-Mol2 conformer-retry vectors (encoders/unimol2-1.1b.yaml: a molecule whose first RDKit
+# embedding fails is embedded again from random starting coordinates), and its checkpoint comes from the run trained on
+# them.
+destination: connectors/kimi-k2.6/unimol2-1.1b/molecule-access-novel-scaffold/untrained
+suite: {$ref: ../../suite_specs/kimi-k2.6/molecule-access-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/unimol2-1.1b/step_000000}}
+inputs: {m: [{$pin: embeddings/unimol2-1.1b/molecule-eval-novel-scaffold}]}
+step: 0
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

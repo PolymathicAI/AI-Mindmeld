@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: >-
+  Please cite the paper first (preferred-citation), then the AI Mindmeld
+  software repository (references), including the software revision you used.
+type: software
+title: AI Mindmeld
+version: 1.0.0
+authors:
+  - family-names: Golkar
+    given-names: Siavash
+  - name: "the AI Mindmeld contributors"
+repository-code: https://github.com/PolymathicAI/AI-Mindmeld
+url: https://github.com/PolymathicAI/AI-Mindmeld
+license: Apache-2.0
+preferred-citation:
+  type: unpublished
+  title: "AI Mindmeld: A Latent Interconnect Protocol"
+  url: https://polymathic-ai.org/papers/aimm.pdf
+  authors:
+    - family-names: Golkar
+      given-names: Siavash
+    - family-names: Kovalic
+      given-names: Jake
+    - family-names: Ho
+      given-names: Shirley
+  year: 2026
+references:
+  - type: software
+    title: AI Mindmeld
+    authors:
+      - family-names: Golkar
+        given-names: Siavash
+      - name: "the AI Mindmeld contributors"
+    repository-code: https://github.com/PolymathicAI/AI-Mindmeld
+    url: https://github.com/PolymathicAI/AI-Mindmeld
+    license: Apache-2.0

@@ -1,0 +1,17 @@
+# chemfm-1b for new extractions and connectors; the read layers are chosen from its read-layer study (read: "all"
+# for the scan). The model and pooling are the paper connector's input's (last ++ mean, one
+# molecule at a time; bf16 on a GPU); only the read layers are open. Layer 22 is the final post-RMSNorm output
+# (encoders/extractors/chemfm.py). ChemFM is CC BY-NC 4.0 (the official repository's LICENSE,
+# github.com/TheLuoFengLab/ChemFM; the Hugging Face card's mit tag is metadata only).
+name: chemfm-1b
+extractor: chemfm
+domain: molecule
+model_id: ChemFM/ChemFM-1B
+revision: f99dc2e89726539bb9cf31b2e2b4360650bac6a8
+read: {$ref: ../shared/read-chemfm-1b.yaml}
+pooling: last+mean
+environment: smallmol
+batch_tokens: 512         # one molecule at a time: the budget is the per-molecule cap
+options:
+  max_tokens: 512
+  batch_molecules: 1

@@ -1,0 +1,11 @@
+# Extension path 2: the encoder recipe of the example extractor, found through `plugins`.
+name: example-kmer
+extractor: example-kmer
+domain: example-rna
+model_id: none
+revision: v1
+read: output
+pooling: mean
+environment: lip
+batch_tokens: 4096
+plugins: [examples.kmer_extractor]

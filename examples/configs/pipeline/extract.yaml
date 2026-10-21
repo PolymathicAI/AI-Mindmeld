@@ -1,0 +1,7 @@
+# Embeddings of every object with the ESM-C 300M recipe (latent_interconnect.run.extract).
+destination: mine/esmc-300m/embeddings
+recipe: {$ref: esmc-300m.yaml}
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+objects: {$pin: mine/items-all}
+part_size: 8
+device_class: cpu

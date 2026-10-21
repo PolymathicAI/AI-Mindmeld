@@ -1,0 +1,16 @@
+# kimi-k2.6's molecule-access-novel-scaffold suite on the molecule domain (molecule-domain) and its evaluation item set.
+id: molecule-access-novel-scaffold
+kind: yes_no
+domains: [{name: molecule, data: {$pin: molecule-domain}}]
+item_set: {$pin: items/molecule-eval-novel-scaffold}
+tasks: [hydroxides, heterocyclic compound, lipid, organonitrogen heterocyclic compound,
+        carbohydrates and carbohydrate derivatives, heteropolycyclic compound, ester, monocyclic compound, ether,
+        alcohol, benzenoid aromatic compound, ketone, organic polycyclic compound, salt,
+        organic tricyclic compound, lactone, flavonoids, steroid, carbopolycyclic compound, peptide,
+        organic fundamental parent, sulfur oxoacid derivative, chlorobenzenes]
+frame: a5
+slots: [{name: x, role: object, connector: m}]
+conditions: [{object: own}]
+thinking: false
+capability: score
+params: {"yes": "Yes", "no": "No"}

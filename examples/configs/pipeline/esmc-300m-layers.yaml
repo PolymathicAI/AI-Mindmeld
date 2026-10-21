@@ -1,0 +1,12 @@
+# Encoder recipe for the layer-selection diagnostics: ESM-C 300M (as esmc-300m.yaml) read at six layers, embedding
+# output to final layer, so the read-layer scan has layers to compare and the held-out scan ridge reads one of them.
+name: esmc-300m-layers
+extractor: esmc
+domain: protein
+model_id: biohub/ESMC-300M
+revision: e4bac860f0c502cd80f3aeac3d0ce6524c6627cb
+read: [0, 6, 12, 18, 24, 30]
+pooling: mean
+environment: esmc          # run by the ESM-C environment's interpreter: --option python=<that env>/bin/python
+batch_tokens: 8192
+options: {max_residues: 2046}

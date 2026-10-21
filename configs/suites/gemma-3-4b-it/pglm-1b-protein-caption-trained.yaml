@@ -1,0 +1,12 @@
+# gemma-3-4b-it's version of suites/kimi-k2.6/pglm-1b-protein-caption-trained.yaml.
+destination: connectors/gemma-3-4b-it/pglm-1b/protein-caption/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/protein-caption.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/pglm-1b/step_002000}
+inputs:
+  m:
+  - {$pin: embeddings/pglm-1b/protein-eval}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

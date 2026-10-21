@@ -1,0 +1,126 @@
+# The paper's molecule relational stream (data.relational_stream.RelationalParams with the molecule answers,
+# data.relational_answers_molecule): the original molecule relational generator, version 4 (its default), as the
+# original MoLFormer-c3, Uni-Mol2 1.1B and ChemFM-1B molecule runs ran it: all relational families (the six
+# families; version 4 states no conjugate), the original molecule task split (definition, classes, functional parent
+# and the trained mechanism roles), hard-negative rate 0.5, long-answer cap 96 tokens, cluster_sqrt draws over the
+# Butina clusters. Prompts: the original generator's prompts (<SLOTk> -> <SLOT:pk>). Prompts marked "new" are not
+# the paper's: every family has at least 3 wordings with the slots at 3 positions; the object is a "compound".
+# fact_curves: the original molecule loss weights' "relational" entry (each fact kind gets the curve of the
+# single-compound format stating it: class, superclass and parent_class -> functional_group_classes;
+# definition -> describe_def; functional_parent -> functional_parent; role -> roles; choice -> yesno; verdict words
+# at the floor = null), with their fitted parameters and floor 0.1.
+# Facts come from the screened molecule training set: every fact below is a training-text field, the class
+# graph and the functional parents' classes included, stored as item lists with the separator "; ".
+# The prompt grammar's lead and system role on half the prompts (the original molecule prompt grammar at rate
+# 0.5): the molecule grammar config (grammar-molecule.yaml).
+answers: molecule
+families:
+  profile:
+  - classes
+  - definition
+  - functional_parent
+  - roles
+  same_class:
+  - classes
+  differences:
+  - classes
+  - functional_parent
+  - roles
+  commonalities:
+  - classes
+  - functional_parent
+  - roles
+  parent_relation:
+  - functional_parent
+  odd_one_out_class:
+  - classes
+prompts:
+  profile:
+  - 'Give a short profile of the compound<SLOT:p1>: its chemical classes, what it is derived from and what it does.'
+  - Summarize what is known about<SLOT:p1> in a few sentences.
+  - <SLOT:p1> — describe its classification, its relations to other compounds and its roles.
+  - Write a brief annotation for the compound<SLOT:p1>.
+  - What kind of compound is<SLOT:p1>, what is it related to, and what does it do?
+  same_class:
+  - Do the compounds<SLOT:p1> and<SLOT:p2> belong to the same chemical class? Explain.
+  - Are<SLOT:p1> and<SLOT:p2> members of one chemical class?
+  - Is<SLOT:p1> in the same class as<SLOT:p2>? Answer and say which class or classes.
+  - Here are two compounds,<SLOT:p1> and<SLOT:p2>. Are they related by class?
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots first
+  - <SLOT:p1> and<SLOT:p2> — do these two compounds belong to the same chemical class? Explain your answer.
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots last
+  - Tell me whether the following two compounds belong to the same chemical class, and name the class or classes
+    involved:<SLOT:p1> and<SLOT:p2>.
+  differences:
+  - How do the compounds<SLOT:p1> and<SLOT:p2> differ?
+  - What are the main differences between<SLOT:p1> and<SLOT:p2>?
+  - Contrast<SLOT:p1> with<SLOT:p2>.
+  - Consider the compounds<SLOT:p1> and<SLOT:p2>. In what ways are they different?
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> versus<SLOT:p2>: what are the main differences between these two compounds?'
+  commonalities:
+  - What do the compounds<SLOT:p1> and<SLOT:p2> have in common?
+  - How are<SLOT:p1> and<SLOT:p2> similar?
+  - Name the similarities between<SLOT:p1> and<SLOT:p2>.
+  - Two compounds are given:<SLOT:p1> and<SLOT:p2>. What do they share?
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> and<SLOT:p2>: what do these two compounds have in common?'
+  parent_relation:
+  - Do<SLOT:p1> and<SLOT:p2> derive from the same parent compound?
+  - Compare the functional parents of<SLOT:p1> and<SLOT:p2>.
+  - How are<SLOT:p1> and<SLOT:p2> related through their parent compounds?
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots first
+  - '<SLOT:p1> and<SLOT:p2>: do they derive from the same parent compounds, from related ones, or from unrelated
+    ones?'
+  odd_one_out_class:
+  - Which of<SLOT:p1>,<SLOT:p2> and<SLOT:p3> is the odd one out by chemical class, and why?
+  - Three compounds:<SLOT:p1>,<SLOT:p2>,<SLOT:p3>. Two share a class. Which one does not?
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots first
+  - <SLOT:p1>,<SLOT:p2> and<SLOT:p3> are three compounds, two of which share a chemical class. Which one is the odd one
+    out?
+  # new (not in the original; >= 3 wordings, >= 3 slot positions): the slots last
+  - Which of these three compounds falls outside the chemical class the other two share:<SLOT:p1>,<SLOT:p2>
+    or<SLOT:p3>?
+fields:
+  classes: classes
+  definition: definition
+  functional_parent: functional_parent
+  roles: mechanism_roles
+  class_graph: class_graph
+  parent_classes: functional_parent_classes
+lists:
+  classes: '; '
+  functional_parent: '; '
+  roles: '; '
+  class_graph: '; '
+  parent_classes: '; '
+own_name: name   # an answer that names one of its compounds is redrawn (the original names_in)
+sampling: cluster_sqrt
+p_hard: 0.5
+max_target_tokens: 96
+floor: 0.1
+fact_curves:
+  class: &classes
+    family: exp
+    floor: 0.1
+    tau: 0.1379
+  superclass: *classes
+  parent_class: *classes
+  definition:
+    family: exp
+    floor: 0.1
+    tau: 2.0891
+  functional_parent:
+    family: flat
+    floor: 0.1
+  role:
+    family: exp
+    floor: 0.1
+    tau: 0.5917
+  choice:
+    family: single_token
+    floor: 0.1
+  verdict: null
+grammar: {$ref: grammar-molecule.yaml}
+answer: {$ref: ../answers/kimi-k2.6.yaml}   # same_* rows asked answer-first
+instruction: Answer Yes or No, then explain.   # those rows' instruction (the convention's own is not read)

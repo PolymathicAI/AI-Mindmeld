@@ -1,0 +1,13 @@
+# Release smoke run on CPU: Gemma 3 4B x esmc-600m, the step-2000 paper connector, on the minimal eval set
+# (examples/README.md).
+destination: release/gemma-3-4b-it/esmc-600m/protein-access-mini/trained
+suite: {$ref: ../suite_specs/protein-access-mini.yaml}
+receiver: {$ref: ../../receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-4b-it/esmc-600m/step_002000}
+inputs:
+  m:
+  - {$pin: release/protein/esmc-600m/embeddings-mini}
+step: 2000
+device_class: cpu
+plan: {planner: length-stable/v1, budget_tokens: 32768, pad_every_batch: true}  # the hf backend pads every batch

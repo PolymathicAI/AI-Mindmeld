@@ -1,0 +1,17 @@
+# chemfm-3b for the production extractions (the larger, additional molecule encoder): chemfm-1b.yaml with the 3B
+# model at the revision of its read-layer scan and its chosen read (shared/read-chemfm-3b.yaml:
+# layer 27 of 0 = embeddings ... 30 = final, post-RMSNorm). Pooling, environment and budgets are the 1B's. License: CC
+# BY-NC 4.0, as the 1B (the official repository's LICENSE, github.com/TheLuoFengLab/ChemFM; the Hugging Face card's
+# mit tag is metadata only).
+name: chemfm-3b
+extractor: chemfm
+domain: molecule
+model_id: ChemFM/ChemFM-3B
+revision: c1464dd3c51643d2d6926a71db98558be97e1ecf
+read: {$ref: ../shared/read-chemfm-3b.yaml}
+pooling: last+mean
+environment: smallmol
+batch_tokens: 512         # one molecule at a time: the budget is the per-molecule cap
+options:
+  max_tokens: 512
+  batch_molecules: 1

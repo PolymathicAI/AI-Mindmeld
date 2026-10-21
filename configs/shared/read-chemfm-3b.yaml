@@ -1,0 +1,6 @@
+# The read layers of chemfm-3b: [27], the read chosen from the read-layer scan (an additional, larger molecule
+# encoder): the recipe's pooling last+mean (the last SMILES token's state concatenated with the token mean, the token
+# first) at layer 27, 3,072 + 3,072 = 6,144 dims, as the read-layer scan measured it (its stored vector at 27, whole).
+# One home for one choice: the recipe's read (encoders/chemfm-3b.yaml), the connectors, ridges and runs on this read
+# (connectors/*/chemfm-3b.yaml, ridges/*/chemfm-3b.yaml, runs/kimi-k2.6/chemfm-3b-mlp4.yaml) cite it by $ref.
+[27]

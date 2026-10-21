@@ -1,0 +1,9 @@
+# kimi-k2.6's protein-transfer suite for the pglm-1b connector at step 2000, on the paper's data.
+destination: connectors/kimi-k2.6/pglm-1b/protein-transfer/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/protein-transfer.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints: {m: {$pin: connectors/kimi-k2.6/pglm-1b/step_002000}}
+inputs: {m: [{$pin: embeddings/pglm-1b/protein-eval}]}
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

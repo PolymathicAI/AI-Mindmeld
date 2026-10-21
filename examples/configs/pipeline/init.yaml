@@ -1,0 +1,6 @@
+# The step-0 connector, initialized from the ridge maps, before any training (latent_interconnect.run.init).
+destination: mine/qwen/init
+connector: {$ref: connector.yaml}
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+encoder: {$ref: esmc-300m.yaml}
+ridge: {name: {$pin: mine/qwen/ridge}}

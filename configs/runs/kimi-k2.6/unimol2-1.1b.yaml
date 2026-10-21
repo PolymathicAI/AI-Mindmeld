@@ -1,0 +1,31 @@
+# The paper's Kimi K2.6 x Uni-Mol2 1.1B run, with the Uni-Mol2 conformer retry
+# (encoders/unimol2-1.1b.yaml: a molecule whose first RDKit embedding fails is embedded again from
+# random starting coordinates): the run on the retry vectors, with the ridge fitted on the recipe without the retry
+# (no refit). The rest is as in the other molecule paper runs (chemfm-1b.yaml beside this file).
+destination: connectors/kimi-k2.6/unimol2-1.1b
+name: unimol2-1.1b-affine
+connector: {$ref: ../../connectors/kimi-k2.6/unimol2-1.1b.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/unimol2-1.1b.yaml}
+domain: {name: molecule, data: {$pin: molecule-domain}}
+ridge: {name_described: {$pin: ridges/kimi-k2.6/unimol2-1.1b/ridge}}  # the source-floor target
+# The ridge was fit on the recipe without the retry (unimol2-1.1b-without-conformer-retry.yaml) and is kept: no refit
+# of layers, starting point or weights. source_fit declares that fit, so the ridge is checked against the recipe it was
+# really fit on and this start reads the retry vectors (build.init_state.SourceFit).
+source_fit:
+  recipe: {$ref: ../../encoders/unimol2-1.1b-without-conformer-retry.yaml}
+  option: conformer_retry_timeout_s
+  ridges: [{$pin: ridges/kimi-k2.6/unimol2-1.1b/ridge}]
+embeddings: [{$pin: embeddings/unimol2-1.1b/molecule-train/embeddings}, {$pin: embeddings/unimol2-1.1b/molecule-monitor/embeddings}]
+training_set: {$pin: molecule-training-set/training_set}
+mixture: {$ref: ../../training/mixture-molecule.yaml}
+steps: 2000
+batch: 85
+micro_batch: null
+seed: 0
+device_class: 8xH200
+optimizer: {$ref: ../../training/optimizer.yaml}
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+eval_suite: {$ref: ../../monitor/molecule-unimol2-1.1b.yaml}
+eval_every: 200
+checkpointing: false

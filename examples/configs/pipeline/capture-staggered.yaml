@@ -1,0 +1,8 @@
+# capture.yaml at every write layer of the staggered xattn connector (connector-xattn-3tok-staggered.yaml) and layer 0.
+destination: mine/qwen/capture-staggered
+recipe: name
+receiver: {$ref: qwen2.5-0.5b-instruct.yaml}
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+layers: [0, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+objects: {$pin: mine/items-train}
+device_class: cpu

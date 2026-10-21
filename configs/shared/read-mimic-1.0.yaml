@@ -1,0 +1,6 @@
+# The read of MIMIC 1.0 for raw inputs: read-mimic.yaml's joint residue mean [mean @16 | mean @20], 1,536 +
+# 1,536 = 3,072 dims, from the public model's recipe (configs/encoders/mimic-1.0.yaml). The trained MIMIC
+# connectors read it in this order.
+recipe: mimic-1.0
+layers: [16, 20]
+combine: concat

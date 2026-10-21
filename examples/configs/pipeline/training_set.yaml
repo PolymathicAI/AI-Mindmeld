@@ -1,0 +1,13 @@
+# The training text of the training objects, screened so that no text states the held-out task (zero-shot) property
+# (latent_interconnect.run.training_set; build.zero_shot). Every held_out task of the domain must be listed in
+# zero_shot_tasks, each with a detector; the training objects must all be in the train split.
+destination: mine/protein/training-set
+domain: {name: protein, data: {$pin: mine/protein-domain}}
+train_ids: {$pin: mine/items-train}
+screen:
+  fields: [caption, keywords]
+  list_fields: {keywords: ";"}
+  property_list_fields: [keywords]
+  zero_shot_tasks: [Mammalia]
+  detectors:
+    - {task: Mammalia, detector: lexical, params: {terms: ['\bmammal', '\bhuman\b', '\bmouse\b', '\brat\b']}}

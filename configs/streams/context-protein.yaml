@@ -1,0 +1,135 @@
+# In-context examples (data.context.ContextSpec): converted from the original protein runs' in-context examples, at
+# their rate 0.8 (rate). The training entries only: the last role, header
+# and example format are held out for the grammar's unseen-wording evaluation (hold "last") and are not carried. The
+# 1,000-entry example pool is not carried as data: it is drawn from the run's screened training set by the original
+# rule (the original pool rule with its answer cap and generic-name filter; size 1000, seed 0, at
+# least 3 capped answers among the pool tasks, 2 sentences / 48 tokens). Task ids are the original qtypes (the base
+# protein domain's text tasks). A named example shows the screened `name` field of the training set (anything shown
+# is training text).
+rate: 0.8
+roles:
+- You answer questions about proteins that are given as embedding tokens in place of their names.
+- Each protein here is shown as an embedding token instead of its name, and you answer questions about it.
+- You are an assistant that reads proteins from embedding tokens that stand in for their names.
+- Proteins in this conversation appear as embedding tokens rather than names.
+- You work with proteins that are identified by embedding tokens instead of names.
+- An embedding token takes the place of each protein's name in the questions you answer.
+- You answer each question about the protein that its embedding token stands for.
+- You are a protein expert who is shown proteins as embedding tokens, not names.
+- In this task every protein is given as an embedding token rather than by name.
+headers:
+- - 'Examples:'
+  - 'Example:'
+- - 'For reference:'
+  - 'For reference:'
+- - 'Example answers:'
+  - 'Example answer:'
+- - 'Sample questions and answers:'
+  - 'Sample question and answer:'
+- - 'Worked examples:'
+  - 'Worked example:'
+- - 'Reference answers:'
+  - 'Reference answer:'
+- - 'Known answers:'
+  - 'Known answer:'
+formats:
+- text: 'Protein:{object}
+
+    Question: {question}
+
+    Answer: {answer}'
+  separator: '
+
+
+    '
+- text: '-{object}: "{question}" -> "{answer}"'
+  separator: '
+
+    '
+- text: 'Example protein:{object}
+
+    Q: {question}
+
+    A: {answer}'
+  separator: '
+
+
+    '
+- text: 'Input:{object}. {question}
+
+    Output: {answer}'
+  separator: '
+
+
+    '
+- text: Protein{object} | {question} | {answer}
+  separator: '
+
+    '
+- text: 'For{object}, the question "{question}" is answered: {answer}'
+  separator: '
+
+    '
+- text: 'Q (protein{object}): {question}
+
+    A: {answer}'
+  separator: '
+
+
+    '
+structures:
+- id: inject_same
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+- id: named_same+inject_other
+  weight: 0.25
+  examples:
+  - - named
+    - same
+  - - inject
+    - other
+- id: inject_same+named_other
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+  - - named
+    - other
+- id: inject_same+inject_other
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+  - - inject
+    - other
+example_questions:
+  describe: Describe this protein.
+  function: What does it do?
+  family: What family is it in?
+  location: Where is it found in the cell?
+  subunit: What is its subunit structure?
+  catalytic: Which reaction does it catalyze?
+  pathway: What does UniProt list as its pathway?
+  ec: What is its EC number?
+name_field: name
+pool_tasks:
+- function
+- family
+- location
+- subunit
+- catalytic
+- pathway
+- ec
+pool:
+  size: 1000
+  seed: 0
+  generic_names: ^(Uncharacterized|Putative|Probable uncharacterized|UPF\d|Protein of unknown function)
+  max_name_chars: 60
+  min_tasks: 3
+  answer_sentences: 2
+  answer_tokens: 48
+  unsplit_fields:
+  - catalytic_activity
+  - ec

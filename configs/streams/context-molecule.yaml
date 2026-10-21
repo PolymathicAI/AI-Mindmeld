@@ -1,0 +1,110 @@
+# Molecule in-context examples (data.context.ContextSpec): converted from the original molecule runs' in-context
+# examples, at their rate 0.8 (rate). Training entries only: the last role,
+# header and example format are held out (hold "last"). The original placeholder {protein} is {object}. The 1,000-entry
+# pool is drawn from the run's screened training set by the original molecule pool rule (cluster_sqrt
+# visiting order, seed 0, a name of at most 60 characters, no generic-name filter, capped answers (2 sentences / 48
+# tokens) from at least 3 distinct sources, where describe_def counts as describe and functional-group classes and
+# parent family as one "classes" source: pool.sources). The original pool's other conditions follow from the training
+# set, not from here: it excluded the evaluation sets (eval200_mol, heldout_mol_extension, subset_mol_n1000 val / test)
+# and required every encoder's embeddings, which the run's training objects already satisfy
+# (molecule-domain-band-split's train split; the pinned training objects are those every encoder embedded). The
+# original "function" pool key is the describe field, here the describe task. Item-list answers are worded by the
+# shared answer lines (answer-lines-molecule.yaml), so every stream's examples read as the rows do. A named example
+# shows the screened `name` field.
+rate: 0.8
+roles:
+- You answer questions about compounds that are given as embedding tokens in place of their names.
+- Each compound here is shown as an embedding token instead of its name, and you answer questions about it.
+- You are an assistant that reads compounds from embedding tokens that stand in for their names.
+- Compounds in this conversation appear as embedding tokens rather than names.
+- You work with compounds that are identified by embedding tokens instead of names.
+- An embedding token takes the place of each compound's name in the questions you answer.
+- You answer each question about the compound that its embedding token stands for.
+- You are a chemistry expert who is shown compounds as embedding tokens, not names.
+- In this task every compound is given as an embedding token rather than by name.
+headers:
+- - "Examples:"
+  - "Example:"
+- - "For reference:"
+  - "For reference:"
+- - "Example answers:"
+  - "Example answer:"
+- - "Sample questions and answers:"
+  - "Sample question and answer:"
+- - "Worked examples:"
+  - "Worked example:"
+- - "Reference answers:"
+  - "Reference answer:"
+- - "Known answers:"
+  - "Known answer:"
+formats:
+- text: "Compound:{object}\nQuestion: {question}\nAnswer: {answer}"
+  separator: "\n\n"
+- text: "-{object}: \"{question}\" -> \"{answer}\""
+  separator: "\n"
+- text: "Example compound:{object}\nQ: {question}\nA: {answer}"
+  separator: "\n\n"
+- text: "Input:{object}. {question}\nOutput: {answer}"
+  separator: "\n\n"
+- text: Compound{object} | {question} | {answer}
+  separator: "\n"
+- text: "For{object}, the question \"{question}\" is answered: {answer}"
+  separator: "\n"
+- text: "Q (compound{object}): {question}\nA: {answer}"
+  separator: "\n\n"
+structures:
+- id: inject_same
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+- id: named_same+inject_other
+  weight: 0.25
+  examples:
+  - - named
+    - same
+  - - inject
+    - other
+- id: inject_same+named_other
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+  - - named
+    - other
+- id: inject_same+inject_other
+  weight: 0.25
+  examples:
+  - - inject
+    - same
+  - - inject
+    - other
+example_questions:
+  describe: Describe this compound.
+  describe_def: Describe this compound.
+  roles: What does it do?
+  functional_group_classes: Which functional-group classes does it belong to?
+  parent_family: Which scaffold, ring-system or natural-product family (or parent compound) does it belong
+    to or derive from?
+  functional_parent: What is its functional parent?
+name_field: name
+pool_tasks:
+- describe
+- describe_def
+- roles
+- functional_group_classes
+- parent_family
+- functional_parent
+pool:
+  size: 1000
+  seed: 0
+  max_name_chars: 60
+  min_tasks: 3
+  sources:
+    describe_def: describe
+    functional_group_classes: classes
+    parent_family: classes
+  answer_sentences: 2
+  answer_tokens: 48
+answer_lines: {$ref: answer-lines-molecule.yaml}
+

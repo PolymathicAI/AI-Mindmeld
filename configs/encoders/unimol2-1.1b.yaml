@@ -1,0 +1,22 @@
+# unimol2-1.1b-without-conformer-retry.yaml with the conformer retry on (extractors/_conformer_retry.py): a molecule whose first RDKit
+# embedding fails, and that unimol_tools would give 2D coordinates, is embedded again from random starting
+# coordinates with chirality enforced, within 120 s, and
+# kept if its specified stereo is unchanged; every other molecule gets unimol_tools' own input, byte for byte. The
+# artifact names each molecule off the first-try route (manifest notes). The name is the scan recipe's, so the paper
+# connector's input names it unchanged; the content (this option) gives it another digest, so its artifacts are other
+# computations and never stand in for the scan recipe's.
+name: unimol2-1.1b
+extractor: unimol2
+domain: molecule
+model_id: unimolv2/1.1B   # unimol_tools model_name / model_size
+revision: 48e1ba230119a5f286b81dd71bec4889aebebffa03e66d9241f3ceb7bede9a5e   # sha256 of modelzoo/1.1B/checkpoint.pt
+read: all
+pooling: cls+mean
+environment: smallmol
+batch_tokens: 2097152     # the pair budget per batch (molecules x padded length^2), the single-layer recipe's
+options:
+  unimol_tools: 0.1.6
+  padding: isolated
+  crop: false
+  batch_molecules: 32
+  conformer_retry_timeout_s: 120   # RDKit's EmbedParameters.timeout for the retry

@@ -1,0 +1,19 @@
+# molformer-c3's token mean at layer 9, the first part of the paper's MoLFormer-c3 read
+# (shared/read-molformer-c3.yaml): the mean over the molecule's own tokens (<bos>, <eos> and padding excluded;
+# extractors._molecules.pool_tokens), the same vector as the mean half of the read-layer scan recipe's cls+mean at 9
+# (the read scan's part: mean). Model, code, tokenizer and batching are the read-layer scan recipe's; only read and
+# pooling differ.
+name: molformer-c3-mean-l9
+extractor: molformer
+domain: molecule
+model_id: DeepChem/MoLFormer-c3-1.1B
+revision: 9f1b9ea3590833bd0ea1a70e789c5d3da11ba7ed
+read: [9]
+pooling: mean
+environment: smallmol
+batch_tokens: 202         # one molecule at a time: the budget is the per-molecule cap
+options:
+  code_model_id: ibm-research/MoLFormer-XL-both-10pct
+  code_revision: 7b12d946c181a37f6012b9dc3b002275de070314
+  max_tokens: 202
+  batch_molecules: 1

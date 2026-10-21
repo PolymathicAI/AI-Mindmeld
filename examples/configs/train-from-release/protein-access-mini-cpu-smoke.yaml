@@ -1,0 +1,14 @@
+# The release's minimal yes/no suite (configs/release/suites/gemma-3-4b-it-esmc-600m-protein-access-mini-cpu.yaml,
+# unchanged) on the CPU smoke's step-3 checkpoint (gemma-3-4b-it-esmc-600m-cpu-smoke.yaml) instead of the paper's
+# step-2000 one. A check that a connector trained from released data loads and scores.
+destination: train-from-release/gemma-3-4b-it/esmc-600m/cpu-smoke/protein-access-mini/s3
+suite: {$ref: ../../../configs/release/suite_specs/protein-access-mini.yaml}
+receiver: {$ref: ../../../configs/receivers/gemma-3-4b-it.yaml}
+checkpoints:
+  m: {$pin: train-from-release/gemma-3-4b-it/esmc-600m/cpu-smoke/step_000003}
+inputs:
+  m:
+  - {$pin: release/protein/esmc-600m/embeddings-mini}
+step: 3
+device_class: cpu
+plan: {planner: length-stable/v1, budget_tokens: 32768, pad_every_batch: true}  # as the release suite (the hf backend pads)

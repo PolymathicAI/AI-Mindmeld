@@ -1,0 +1,6 @@
+# The one-pass micro-batching (training.config.RunConfig.micro_batch): micro-batching
+# stays an optional capability, but every paper run takes ONE micro-batch per step (a single pass over the batch).
+# This shared fragment is null (one `loss` call per step) and is cited by the ESM-C 6B multi-token run configs. The
+# ordinary paper runs do not cite it: each declares its own `micro_batch: null`, so a value entered for one case
+# moves nothing else.
+null
