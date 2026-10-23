@@ -1341,8 +1341,8 @@
       <p><strong>AI Mindmeld: A Latent Interconnect Protocol</strong></p>
       <p>${link(REPO, 'Repository')} · ${link(`${REPO}/tree/main/src/latent_interconnect/chat`, 'Code of this chat')}</p>
       <p>Please cite the paper first, then the repository:</p>
-      <p>Siavash Golkar, Jake Kovalic, and Shirley Ho. <em>${link('https://polymathic-ai.org/papers/aimm.pdf', 'AI Mindmeld: A Latent Interconnect Protocol.')}</em> 2026. Manuscript.</p>
-      <p>Siavash Golkar and the AI Mindmeld contributors. <em>AI Mindmeld</em> ${link(REPO, 'software repository')}.</p>`;
+      <p>Siavash Golkar, Jake Kovalic, and Shirley Ho. <em>${link('https://arxiv.org/abs/2610.30215', 'AI Mindmeld: A Latent Interconnect Protocol.')}</em> arXiv:2610.30215, 2026.</p>
+      <p>Siavash Golkar, Dennis Bollweg, and the AI Mindmeld contributors. <em>AI Mindmeld</em> ${link(REPO, 'software repository')}.</p>`;
   }
 
   // ------------------------------------------------------------------ login

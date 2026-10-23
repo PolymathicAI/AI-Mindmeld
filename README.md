@@ -4,7 +4,7 @@
 
 <p align="center"><strong>A Latent Interconnect Protocol</strong></p>
 <p align="center">Data · Training · Evaluation · Inference</p>
-<p align="center"><a href="https://polymathic-ai.org/blog/ai-mindmeld/">Blog post</a> · <a href="https://polymathic-ai.org/papers/aimm.pdf">Paper</a> · <a href="https://huggingface.co/sgolkar/ai-mindmeld-connectors">Connectors</a> · <a href="https://huggingface.co/datasets/sgolkar/ai-mindmeld-data">Data</a></p>
+<p align="center"><a href="https://polymathic-ai.org/blog/ai-mindmeld/">Blog post</a> · <a href="https://arxiv.org/abs/2610.30215">Paper</a> · <a href="https://huggingface.co/sgolkar/ai-mindmeld-connectors">Connectors</a> · <a href="https://huggingface.co/datasets/sgolkar/ai-mindmeld-data">Data</a></p>
 
 ---
 
@@ -106,7 +106,7 @@ tokens. The library's AUROCs use `log P(Yes) − log P(No)` from direct yes/no q
 `examples/ask.py --yes-no` prints these probabilities and that score for one object
 ([getting started](examples/README.md#4-ask-a-question)).
 
-For the measured effect of reasoning on protein-property prediction, see the [paper's](https://polymathic-ai.org/papers/aimm.pdf) **LLM responses to
+For the measured effect of reasoning on protein-property prediction, see the [paper's](https://arxiv.org/abs/2610.30215) **LLM responses to
 latent inputs and the effect of reasoning** section. Its **Limitations** paragraph in **Discussion and
 outlook** covers the broader limits of the approach. The [LIP library](library/README.md#uploaded-connectors)
 explains how to interpret connector scores; the paper describes connector training and held-out-task design.
@@ -121,9 +121,23 @@ apply separately.
 
 Please cite the paper first, then the repository:
 
-> Siavash Golkar, Jake Kovalic, and Shirley Ho. *[AI Mindmeld: A Latent Interconnect Protocol.](https://polymathic-ai.org/papers/aimm.pdf)* 2026. Manuscript.
+> Siavash Golkar, Jake Kovalic, and Shirley Ho. *[AI Mindmeld: A Latent Interconnect Protocol.](https://arxiv.org/abs/2610.30215)* arXiv:2610.30215, 2026.
 >
-> Siavash Golkar and the AI Mindmeld contributors. *AI Mindmeld* [software repository](https://github.com/PolymathicAI/AI-Mindmeld).
+> Siavash Golkar, Dennis Bollweg, and the AI Mindmeld contributors. *AI Mindmeld* [software repository](https://github.com/PolymathicAI/AI-Mindmeld).
 
 Include the software revision you used. [CITATION.cff](CITATION.cff) provides machine-readable citations;
 [NOTICE](NOTICE) records the attribution notice.
+
+BibTeX:
+
+```bibtex
+@misc{golkar2026aimindmeldlatentinterconnect,
+      title={AI Mindmeld: A Latent Interconnect Protocol},
+      author={Siavash Golkar and Jake Kovalic and Shirley Ho},
+      year={2026},
+      eprint={2610.30215},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2610.30215},
+}
+```

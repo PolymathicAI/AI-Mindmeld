@@ -109,7 +109,7 @@ The [index](https://huggingface.co/sgolkar/ai-mindmeld-connectors/resolve/72a799
 records checkpoint identities and manifest checksums. Manifests identify model revisions, configurations,
 and file checksums.
 
-For training details, see the [paper's methods](https://polymathic-ai.org/papers/aimm.pdf). Each connector's
+For training details, see the [paper's methods](https://arxiv.org/abs/2610.30215). Each connector's
 manifest in the [tables above](#uploaded-connectors), [specialist read configs](../configs/shared/), and
 [receiving LLM write configs](../configs/connectors/) describe its representations and injection layout.
 For receiving LLM writes: Layer `L` is the input to decoder block `L`, counted from zero; layer 0 is the token embedding.

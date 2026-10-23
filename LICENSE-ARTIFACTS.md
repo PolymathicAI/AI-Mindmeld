@@ -16,9 +16,9 @@ adaptations, retain the supplied attribution and notices, link the license, and 
 Please use the following credit, with the paper first and repository second:
 
 > Siavash Golkar, Jake Kovalic, and Shirley Ho. *AI Mindmeld: A Latent Interconnect Protocol.*
-> 2026. Manuscript.
+> arXiv:2610.30215, 2026. https://arxiv.org/abs/2610.30215
 >
-> Software: Siavash Golkar and the AI Mindmeld contributors, *AI Mindmeld*,
+> Software: Siavash Golkar, Dennis Bollweg, and the AI Mindmeld contributors, *AI Mindmeld*,
 > https://github.com/PolymathicAI/AI-Mindmeld.
 
 Include the artifact name and version or download URL, and identify any modifications. See
