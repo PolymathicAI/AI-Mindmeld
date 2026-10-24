@@ -1,0 +1,79 @@
+# The Kimi K2.6 x ESM-C 6B multi-token run trained on all tasks: esmc-6b-mlp4-staggered.yaml beside this file on the
+# all-tasks training set and mixture. Its released checkpoints are pinned by its publication
+# (esmc-6b-mlp4-staggered-all-tasks-achieved.yaml).
+destination: connectors/kimi-k2.6/esmc-6b-mlp4-staggered-all-tasks-training
+name: esmc-6b-mlp4-staggered-all-tasks
+connector:
+  name: esmc-6b-mlp4-staggered
+  receiver: kimi-k2.6
+  input: {recipe: esmc-6b-l51l80, layers: {$ref: ../../shared/read-esmc-6b.yaml}, combine: concat}
+  tokens:
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+  layer0: constant
+  layers:
+    rule: explicit
+    per_token:
+      - [5, 9, 14, 22, 36, 49]
+      - [6, 10, 15, 25, 39, 54]
+      - [7, 11, 16, 31, 42, 56]
+      - [8, 13, 21, 33, 46, 58]
+  kind: mlp
+  kind_params: {d_s: 2560, ff_mult: 4}
+  # Starting alphas (score-weighted, clipped, scaled separately per token). Per token: 0.99 x (score - 0.5) / the
+  # largest such excess among that token's six write layers, clipped to [0.1, 0.9], six decimals; score = the layer's
+  # mean AUROC over the four protein tasks when written alone (one token, held-out linear ridge; study record
+  # 26e42435501c). Exploratory, selected on the 500 proteins it was scored on; no four-token scan exists. Values:
+  # the study's start-candidate table, SHA-256 92b23114... (task set P4, form per_token, column weight_6dp). All 24 write-layer
+  # alphas are learned: per_layer goes with first: null, so no token's first write is fixed at 1.0. The four layer-0
+  # constants stay at alpha 1. init is unused: every write layer is named.
+  alpha:
+    first: null
+    init: 0.4
+    learned: true
+    budget: null
+    per_layer: {
+      5: 0.741244, 9: 0.9, 14: 0.700814, 22: 0.405965, 36: 0.1, 49: 0.115146,  # token 1
+      6: 0.9, 10: 0.9, 15: 0.856186, 25: 0.385338, 39: 0.1, 54: 0.1,  # token 2
+      7: 0.9, 11: 0.710971, 16: 0.559944, 31: 0.215801, 42: 0.1, 56: 0.132373,  # token 3
+      8: 0.9, 13: 0.839005, 21: 0.350827, 33: 0.223709, 46: 0.1, 58: 0.112888,  # token 4
+      }
+  seed: 0
+  layer_choice: {decisions: [], note: "the staggered layout, six writes a token in turn; read [51|80]"}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+encoder: {$ref: ../../encoders/esmc-6b-l51l80.yaml}
+domain: {name: protein, data: {$pin: protein-domain}}
+ridge: {name_described: {$pin: ridges/kimi-k2.6/esmc-6b}}
+# esmc-6b-l51l80 (pooled and per-residue) on every expanded training object, on the monitor items and on the
+# variants' bound wild-type parents.
+embeddings:
+  - {$pin: embeddings/esmc-6b/protein-train}
+  - {$pin: embeddings/esmc-6b/protein-monitor}
+  - {$pin: embeddings/esmc-6b/protein-parents}
+training_set: {$pin: protein-training-set-all-tasks/training_set}
+mixture: {$ref: ../../training/mixture-protein-all-tasks.yaml}
+# Steps: 5,000. A job stopped at its walltime saves its resume state on SIGUSR1 and a resubmitted job resumes it
+# (run/train.py).
+steps: 5000
+# Batch 85, with esmc-6b-mlp4-staggered.yaml's micro-batch setting.
+batch: 85
+micro_batch: {$ref: ../../training/micro-batch.yaml}
+seed: 0
+device_class: 8xH200
+# The weight-decay rule: W-only decay at lambda = 2.5e-4 x 2000 / steps = 0.5 / 5000 = 1.0e-4; every other field is
+# ../../training/optimizer.yaml's.
+optimizer:
+  lr_rel: 0.002
+  lr_alpha: 0.01
+  warmup_steps: 20
+  schedule: constant
+  weight_decay: 1.0e-4
+  clip: 1.0
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+# The training-time monitor suite (../../monitor/protein.yaml): 300 validation proteins plus 200 training-set members.
+eval_suite: {$ref: ../../monitor/protein.yaml}
+eval_every: 200
+# Activation checkpointing off, handed to the backend by the trainer.
+checkpointing: false

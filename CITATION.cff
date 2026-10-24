@@ -4,7 +4,7 @@ message: >-
   software repository (references), including the software revision you used.
 type: software
 title: AI Mindmeld
-version: 1.0.0
+version: 1.1.0
 authors:
   - family-names: Golkar
     given-names: Siavash

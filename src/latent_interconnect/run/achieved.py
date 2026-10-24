@@ -5,10 +5,15 @@ no record, so nothing pins them. This stage writes a record of its own for them:
 ``training.config.AchievedSpec`` (the run embedded), outputs ``step_<6 digits>`` for every checkpoint the run's resume
 state holds as committed (``training.trainer.achieved_run``, which checks them against the store and the log) and
 ``log`` (the log up to the achieved step and ``derived.json``), inputs the run's (``run.train.run_inputs``), and
-``resumed`` every segment of the run's ledger. ``execution`` says what it is: ``publication`` (:data:`PUBLICATION`),
-``achieved_step`` (the resume state's step: what was saved), ``logged_step`` (the log's last step, never an achieved
-one: lines past the saved step are not published) and the run's training execution under ``training.<key>`` (the
-training job's backend, not this job's; this job's devices are its own, none). No ``done.json`` is written and the
+``resumed`` every segment of the run's ledger. A stopped extended run (``run.train``, ``extend_from``) keeps its
+lineage, as its train record would: ``Provenance.extended_from`` from its ``extension.json``, and the source record
+among the input records (``extended_from``, ``run.train.source_record``), so its inherited segments are told apart from
+its new ones (``Provenance.inherited_segments``, ``Provenance.new_segments``) and its purpose is inherited; an origin
+that does not load or a source record no longer in the store refuses the publication. ``execution`` says what it is:
+``publication`` (:data:`PUBLICATION`), ``achieved_step`` (the resume state's step: what was saved), ``logged_step``
+(the log's last step, never an achieved one: lines past the saved step are not published) and the run's training
+execution under ``training.<key>`` (the training job's backend, not this job's; this job's devices are its own,
+none). No ``done.json`` is written and the
 run directory is not changed, apart from the lock file (``train.lock``) the publication creates there, so a later
 continuation still resumes it.
 
@@ -62,7 +67,7 @@ from latent_interconnect.run._main import (
     stage_main,
     visible_devices,
 )
-from latent_interconnect.run.train import RUN_DIRECTORY_BUSY, TRAIN_LOG_KIND, run_inputs
+from latent_interconnect.run.train import EXTENDED_FROM, RUN_DIRECTORY_BUSY, TRAIN_LOG_KIND, run_inputs, source_record
 from latent_interconnect.training.config import AchievedSpec
 from latent_interconnect.training.trainer import (
     DERIVED_FILE,
@@ -73,6 +78,7 @@ from latent_interconnect.training.trainer import (
     RunDirectoryBusyError,
     achieved_run,
     earlier_segments,
+    read_extension,
     run_directory_lock,
 )
 from latent_interconnect.workspace import Workspace
@@ -211,6 +217,11 @@ def _publish(config: AchievedSpec, ws: Workspace, workspace: Path, devices: tupl
         inputs = run_inputs(run, ws)
     except (IntegrityError, OSError) as err:
         _refuse(PUBLISH_REFUSED, f"an input of the run cannot be read: {type(err).__name__}: {err}")
+    try:  # an extended run's lineage, as the train stage records it (run.train): read before the log is committed
+        origin = read_extension(workspace)
+        source = None if origin is None else source_record(ws, origin)
+    except (ValueError, IntegrityError, OSError) as err:  # ExtensionError is a ValueError
+        _refuse(PUBLISH_REFUSED, f"the extended run's source cannot be resolved: {type(err).__name__}: {err}")
     key = f"achieved-log-{run.digest()[:16]}-{hashlib.sha256(achieved.log).hexdigest()[:16]}"
     log = ws.artifacts.committed(key)
     if log is None:
@@ -239,6 +250,8 @@ def _publish(config: AchievedSpec, ws: Workspace, workspace: Path, devices: tupl
         devices=devices,
         execution=execution,
         resumed=segments,
+        records={} if source is None else {EXTENDED_FROM: source},
+        extended_from=origin,
     )
 
 

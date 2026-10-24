@@ -1,0 +1,13 @@
+# kimi-k2.6's Rhea suite, cell novP-novM, for the esmc-6b-mlp4-staggered x chemfm-3b-mlp4 pair at step 2000.
+destination: connectors/kimi-k2.6/esmc-6b-mlp4-staggered_x_chemfm-3b-mlp4/xdom-rhea-novP-novM/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/xdom-rhea-novP-novM.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints:
+  p: {$pin: connectors/kimi-k2.6/esmc-6b-mlp4-staggered/step_002000}
+  m: {$pin: connectors/kimi-k2.6/chemfm-3b-mlp4/step_002000}
+inputs:
+  p: [{$pin: embeddings/esmc-6b/rhea-proteins}]   # ESM-C 6B [51|80] of the Rhea proteins
+  m: [{$pin: embeddings/chemfm-3b/rhea-molecules}]   # ChemFM-3B L27 of the Rhea molecules
+step: 2000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

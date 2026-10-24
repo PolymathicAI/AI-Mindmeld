@@ -9,6 +9,10 @@ reachable from a stream (an extra table too: one not keyed by ``object_id`` is r
 names, the domain's text fields and its frames are not part of the view: anything a training prompt shows is training
 text (``data.training_text``, restricted to the declared fields) or the stream's own wording. An undeclared task,
 label column or table raises ``KeyError`` naming the stream.
+
+Both views show each task with its catalog scope, except for the streams of an all-tasks training set
+(``build.zero_shot.TrainingSetSpec.all_tasks``), which no task is held out of: built with ``all_trained``, they show
+every task as trained (``TaskScope.TRAINED``), so the streams' own refusal of untrained tasks lets them all through.
 """
 
 from __future__ import annotations
@@ -16,7 +20,7 @@ from __future__ import annotations
 from collections.abc import Collection, Iterator, Mapping
 from typing import TYPE_CHECKING, Protocol
 
-from latent_interconnect.domains.base import Domain, TaskSpec
+from latent_interconnect.domains.base import Domain, TaskScope, TaskSpec
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -74,6 +78,14 @@ class DomainView(CatalogView, Protocol):
         ...
 
 
+def _catalog(domain: Domain, all_trained: bool) -> Mapping[str, TaskSpec]:
+    """Return the domain's task catalog; with ``all_trained``, each task as a trained one (its scope alone changed)."""
+    tasks = domain.tasks()
+    if not all_trained:
+        return tasks
+    return {t: spec.model_copy(update={"scope": TaskScope.TRAINED}) for t, spec in tasks.items()}
+
+
 class DomainCatalog:
     """A :class:`CatalogView` of a domain.
 
@@ -81,8 +93,8 @@ class DomainCatalog:
         domain: the domain.
     """
 
-    def __init__(self, domain: Domain) -> None:
-        self._domain = domain
+    def __init__(self, domain: Domain, *, all_trained: bool = False) -> None:
+        self._domain, self._all_trained = domain, all_trained
 
     @property
     def name(self) -> str:
@@ -96,7 +108,7 @@ class DomainCatalog:
 
     def tasks(self) -> Mapping[str, TaskSpec]:
         """Return the task catalog by id."""
-        return self._domain.tasks()
+        return _catalog(self._domain, self._all_trained)
 
     def label_columns(self) -> frozenset[str]:
         """Return the names of the label columns."""
@@ -135,6 +147,7 @@ class RestrictedDomain:
         tables: the declared extra tables.
         objects: the objects whose rows the view shows (the training text's objects).
         user: who reads (named in every refusal, e.g. ``"stream 'yes_no'"``).
+        all_trained: show every task as trained (the streams of an all-tasks training set).
 
     Raises:
         KeyError: if a declared task, label column or table is not in the domain.
@@ -149,8 +162,9 @@ class RestrictedDomain:
         tables: Collection[str],
         objects: Collection[str],
         user: str,
+        all_trained: bool = False,
     ) -> None:
-        self._domain, self._user = domain, user
+        self._domain, self._user, self._all_trained = domain, user, all_trained
         self._objects = frozenset(objects)
         self._tasks, self._labels, self._tables = frozenset(tasks), frozenset(labels), frozenset(tables)
         missing = {
@@ -173,7 +187,7 @@ class RestrictedDomain:
 
     def tasks(self) -> Mapping[str, TaskSpec]:
         """Return the declared tasks by id; looking up another raises ``KeyError`` naming the stream."""
-        return _Declared(self._domain.tasks(), self._tasks, self._user)
+        return _Declared(_catalog(self._domain, self._all_trained), self._tasks, self._user)
 
     def label_columns(self) -> frozenset[str]:
         """Return the declared label columns (a restricted view is also a :class:`CatalogView`)."""

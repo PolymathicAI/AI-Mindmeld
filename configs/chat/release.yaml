@@ -40,6 +40,9 @@ receivers:
       chemfm-1b: {label: "ChemFM-1B", run: {$ref: ../runs/gemma-3-12b-it/chemfm-1b.yaml}, step: 2000}
       molformer-c3: {label: "MoLFormer-c3", run: {$ref: ../runs/gemma-3-12b-it/molformer-c3.yaml}, step: 2000}
       unimol2-1.1b: {label: "Uni-Mol2 1.1B", run: {$ref: ../runs/gemma-3-12b-it/unimol2-1.1b.yaml}, step: 2000}
+      # trained on all tasks, each at its released step
+      esmc-6b-mlp4-all-tasks: {label: "ESM-C 6B, 4-token MLP, all tasks", run: {$ref: ../runs/gemma-3-12b-it/esmc-6b-mlp4-all-tasks.yaml}, step: 5000}
+      chemfm-3b-mlp4-all-tasks: {label: "ChemFM-3B, 4-token MLP, all tasks", run: {$ref: ../runs/gemma-3-12b-it/chemfm-3b-mlp4-all-tasks.yaml}, step: 5000}
   kimi-k2.6:
     label: Kimi K2.6
     receiver: {$ref: ../receivers/kimi-k2.6.yaml}
@@ -49,9 +52,12 @@ receivers:
     context: 16384
     # an estimate
     expected_load_s: 1800
-    # Offered: one connector. Not offered (released, not served with aimm-chat): kimi-k2.6__esmc-600m, __mimic,
+    # Offered: three connectors. Not offered (released, not served with aimm-chat): kimi-k2.6__esmc-600m, __mimic,
     # __pglm-1b, __esmc-6b and the molecule connectors __chemfm-1b, __molformer-c3, __unimol2-1.1b.
     # Each can be added as an entry: all-connectors.yaml has the lines of the six paper connectors, and
     # __esmc-6b's run is ../runs/kimi-k2.6/esmc-6b.yaml.
     connectors:
       esmc-6b-mlp4-staggered: {label: "ESM-C 6B, 4-token MLP", run: {$ref: runs/kimi-k2.6__esmc-6b-mlp4-staggered.yaml}, step: 2000}
+      # trained on all tasks, each at its released step
+      esmc-6b-mlp4-staggered-all-tasks: {label: "ESM-C 6B, 4-token MLP, all tasks", run: {$ref: runs/kimi-k2.6__esmc-6b-mlp4-staggered-all-tasks.yaml}, step: 4800}
+      chemfm-3b-mlp4-all-tasks: {label: "ChemFM-3B, 4-token MLP, all tasks", run: {$ref: ../runs/kimi-k2.6/chemfm-3b-mlp4-all-tasks.yaml}, step: 4800}

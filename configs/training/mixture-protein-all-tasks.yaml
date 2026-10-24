@@ -1,0 +1,13 @@
+# mixture-protein.yaml with the Yes/No stream asking every task (../streams/yes-no-protein-all-tasks.yaml).
+- stream: relational
+  share: 0.2
+  params: {$ref: ../streams/relational-protein.yaml}
+- stream: text
+  share: 0.4
+  params: {$ref: ../streams/text-protein.yaml}
+- stream: yes_no
+  share: 0.2
+  params: {$ref: ../streams/yes-no-protein-all-tasks.yaml}
+- stream: variant
+  share: 0.2
+  params: {$ref: ../streams/variant-protein.yaml}

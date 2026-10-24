@@ -1,0 +1,14 @@
+# The protein training set on all tasks: the released protein training set's objects, with no task held out. Build:
+# python -m latent_interconnect.run.training_set --config configs/training_sets/protein-all-tasks.yaml --pin
+# protein-training-set-all-tasks
+destination: protein-training-set-all-tasks
+domain: {name: protein, data: {$pin: protein-domain}}
+train_ids: {$pin: protein-training-set/training_set}
+all_tasks: true
+screen:
+  fields: [caption, keywords, function, catalytic_activity, pathway, subunit, subcellular_location, similarity,
+           protein_families, ec, variant_effect, name]
+  list_fields: {keywords: ";", ec: ";"}
+  property_list_fields: [keywords]
+  zero_shot_tasks: []
+  detectors: []

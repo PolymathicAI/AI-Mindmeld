@@ -1,0 +1,35 @@
+# kimi-k2.6's Rhea reaction-participation suite, cell novP-novM (novel proteins, novel molecules).
+id: xdom/rhea/novP-novM
+kind: cross_domain
+domains: [{name: protein, data: {$pin: protein-domain}}, {name: molecule, data: {$pin: molecule-domain}}]
+item_set: {$pin: items/rhea-novP-novM}
+tasks: [participation]
+slots: [{name: p, role: protein, connector: p}, {name: m, role: molecule, connector: m}]
+conditions:   # the 2 x 2 factorial and its diagnostics
+  - {protein: own, molecule: own}                   # D: both connectors (the plotted cell)
+  - {protein: name, molecule: value}                # A: protein name, molecule SMILES
+  - {protein: name, molecule: own}                  # B: protein name, molecule connector
+  - {protein: own, molecule: value}                 # C: protein connector, molecule SMILES
+  - {protein: name, molecule: name}                 # both names (the text reference)
+  - {protein: own, molecule: name}                  # protein connector, molecule name
+  - {protein: placeholder, molecule: own}           # protein omitted
+  - {protein: own, molecule: placeholder}           # molecule omitted
+  - {protein: placeholder, molecule: placeholder}   # both omitted
+thinking: false
+capability: score
+params:
+  user: >-
+    {p} {m} Does this protein catalyse a reaction in which this compound is a substrate or a product? Answer Yes or
+    No.
+  sentences:
+    p:
+      own: "Here is an unknown protein, given to you as an embedding:<SLOT:p>."
+      placeholder: "Here is an unknown protein, given to you as an embedding:<SLOT:p>."
+      name: "Here is a protein, given by its name:<SLOT:p>."
+    m:
+      own: "Here is an unknown compound, given to you as an embedding:<SLOT:m>."
+      placeholder: "Here is an unknown compound, given to you as an embedding:<SLOT:m>."
+      name: "Here is a compound, given by its name:<SLOT:m>."
+      value: "Here is a compound, given as a SMILES string:<SLOT:m>."
+  "yes": "Yes"   # quoted: YAML 1.1 reads bare yes / no as booleans
+  "no": "No"

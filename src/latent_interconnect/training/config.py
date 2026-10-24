@@ -77,6 +77,14 @@ class OptimizerSpec(Config):
         t = min(1.0, max(0.0, step / max(1, steps - 1)))
         return warm * (self.lr_floor + (1.0 - self.lr_floor) * 0.5 * (1.0 + math.cos(math.pi * t)))
 
+    def depends_on_total(self) -> bool:
+        """Return whether :meth:`factor` reads the run's total ``steps``: every schedule but ``constant``.
+
+        A run on such a schedule takes other rates at the same step under another total, so it cannot be extended
+        to more steps (the ``train`` stage's ``extend_from``).
+        """
+        return self.schedule != "constant"
+
 
 class CheckpointSpec(Config):
     """Resume-state policy (``writes.checkpoint``); committed checkpoints follow ``RunConfig.checkpoint_every``.
@@ -104,7 +112,7 @@ class RunConfig(StageConfig):
             (``build.init_state.SourceFit``: the original start kept for a run on corrected inputs; added field).
         embeddings: digests of every embedding artifact the run reads (train pools, eval sets, variants).
         training_set: digest of the screened training set (``build.zero_shot``): objects and the text fields
-            streams may use.
+            streams may use; an all-tasks set (``TrainingSetSpec.all_tasks``) also lets them train every task.
         mixture: the stream mixture.
         steps: optimizer steps (an upper bound for walltime-bound runs).
         batch: examples per step, fixed (measured beforehand with the batch measurement tool).

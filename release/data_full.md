@@ -6,15 +6,15 @@ and small examples. The [LIP library](../library/README.md) lists compatible pre
 
 ## Contents
 
-The data index contains **41 bundles: 38 full-data bundles, two minimal evaluation sets, and one software
-DEMO bundle**. The connector index contains **27 bundles: 25 pretrained connectors and two software DEMOs**.
+The data index contains **46 bundles: 43 full-data bundles, two minimal evaluation sets, and one software
+DEMO bundle**. The connector index contains **31 bundles: 29 pretrained connectors and two software DEMOs**.
 
 | Data | Contents | Bundle names |
 |---|---|---|
 | Domains | Object tables, splits, clusters, labels, task catalogs, and text fields; protein data also include variants. | `protein-domain`, `molecule-domain` (includes `molecule-text`) |
-| Training sets | Text and annotations consumed by the training streams. | `protein-training-set`, `molecule-training-set` |
-| Item sets | Objects selected for evaluation and training monitoring. | `protein-items`, `molecule-items` |
-| Embeddings | Specialist representations for training, evaluation, and stored-vector inference, at the read layers each connector uses. | `embeddings-<specialist>` |
+| Training sets | Text and annotations consumed by the training streams. | `protein-training-set`, `molecule-training-set`, `protein-training-set-all-tasks`, `molecule-training-set-all-tasks` |
+| Item sets | Objects selected for evaluation and training monitoring; `rhea-items` and the `*-rhea` embeddings are the Rhea data for the paper's Rhea results, evaluated by the `*-xdom-rhea-*` configs in [configs/suites](../configs/suites/) and [configs/analyses](../configs/analyses/). | `protein-items`, `molecule-items`, `rhea-items` |
+| Embeddings | Specialist representations for training, evaluation, and stored-vector inference, at the read layers each connector uses. | `embeddings-<specialist>`, `embeddings-esmc-6b-rhea`, `embeddings-chemfm-3b-rhea` |
 | Ridge starts | Initial mappings from specialist features to receiving LLM states, at the connector's write layers. | `ridge-<receiver>__<specialist>` |
 | Minimal evaluation sets | Eight proteins with ESM-C 600M vectors or eight molecules with ChemFM-1B vectors, together with their domain tables and evaluation items. | `protein-esmc-600m-mini`, `molecule-chemfm-1b-mini` |
 | Residue DEMO | Pooled and per-residue ESM-C 600M states for the protein mini set, for the software examples. | `protein-esmc-600m-residues-mini-demo` |
@@ -30,7 +30,7 @@ python -m latent_interconnect.release_download --list --kinds
 python -m latent_interconnect.release_download --all-data --dry-run
 ```
 
-`--all-data` selects the **38 full-data bundles and two mini sets**; the DEMO bundle is separate.
+`--all-data` selects the **43 full-data bundles and two mini sets**; the DEMO bundle is separate.
 `--dry-run` lists sizes without downloading. Downloads use both a Hugging Face cache and an installed
 copy, so allow space for both, plus model weights and environments. Select only the inputs you need
 with repeated `--data NAME` or `--connector NAME` options.
@@ -42,10 +42,10 @@ python -m latent_interconnect.release_download \
   --data molecule-domain --data molecule-training-set --data molecule-items --dest $LIP_DATA
 ```
 
-The defaults pin data revision `a27d7808625794b31e44ad9b909816c17748b8f0` and connector revision
-`72a79954ec2780f49f96ccf3a4bdaf0d19642f6b`. The
-[data index](https://huggingface.co/datasets/sgolkar/ai-mindmeld-data/resolve/a27d7808625794b31e44ad9b909816c17748b8f0/data.json)
-and [connector index](https://huggingface.co/sgolkar/ai-mindmeld-connectors/resolve/72a79954ec2780f49f96ccf3a4bdaf0d19642f6b/connectors.json)
+The defaults pin data revision `6ab9a68b9ddc15249ff4aa585e59b2b5a00f7f83` and connector revision
+`f69ffac6715789f730ef0985ef54ae82c7051954`. The
+[data index](https://huggingface.co/datasets/sgolkar/ai-mindmeld-data/resolve/6ab9a68b9ddc15249ff4aa585e59b2b5a00f7f83/data.json)
+and [connector index](https://huggingface.co/sgolkar/ai-mindmeld-connectors/resolve/f69ffac6715789f730ef0985ef54ae82c7051954/connectors.json)
 record bundle paths, sizes, and manifest checksums. Use `--data-revision` and `--revision` to select other
 full commit revisions explicitly.
 
@@ -84,11 +84,11 @@ The table maps connector families to reusable inputs. `<receiver>` is the LLM's 
 | `<receiver>__esmc-600m` (3) | `protein-domain`, `protein-training-set`, `protein-items`, `embeddings-esmc-600m`, `ridge-<receiver>__esmc-600m` | Use `examples/embed.py`; see [ESM-C setup](../examples/README.md#6-embed-your-own-proteins-esm-c-600m). |
 | `<receiver>__mimic` (3) | the protein bundles above, `embeddings-mimic`, `ridge-<receiver>__mimic` | Use the public MIMIC 1.0 model with `examples/embed_mimic.py`; see [MIMIC setup](../examples/README.md#7-mimic-from-raw-inputs). |
 | `<receiver>__pglm-1b` (3) | the protein bundles above, `embeddings-pglm-1b`, `ridge-<receiver>__pglm-1b` | Use `configs/encoders/pglm-1b.yaml`; supply an interpreter with PGLM's dependencies for its `esmc` environment entry ([encoder setup](../examples/guides/extending.md#2-a-new-object-domain-and-encoder)). |
-| `gemma-3-4b-it__esmc-6b`, `gemma-3-12b-it__esmc-6b`, `kimi-k2.6__esmc-6b`, `kimi-k2.6__esmc-6b-mlp4-staggered` (4) | the protein bundles above, `embeddings-esmc-6b`, `ridge-gemma-3-4b-it__esmc-6b`, `ridge-gemma-3-12b-it__esmc-6b` or `ridge-kimi-k2.6__esmc-6b` | Use `configs/encoders/esmc-6b-l51l80.yaml`, an `esmc` environment and a GPU. |
+| `gemma-3-4b-it__esmc-6b`, `gemma-3-12b-it__esmc-6b`, `kimi-k2.6__esmc-6b`, `kimi-k2.6__esmc-6b-mlp4-staggered`, `kimi-k2.6__esmc-6b-mlp4-staggered-all-tasks`, `gemma-3-12b-it__esmc-6b-mlp4-all-tasks` (6) | the protein bundles above (`protein-training-set-all-tasks` for `*-all-tasks`), `embeddings-esmc-6b`, `ridge-gemma-3-4b-it__esmc-6b`, `ridge-gemma-3-12b-it__esmc-6b` or `ridge-kimi-k2.6__esmc-6b` | Use `configs/encoders/esmc-6b-l51l80.yaml`, an `esmc` environment and a GPU. |
 | `<receiver>__chemfm-1b` (3) | `molecule-domain`, `molecule-training-set`, `molecule-items`, `embeddings-chemfm-1b`, `ridge-<receiver>__chemfm-1b` | Use `configs/encoders/chemfm-1b.yaml` in a matching specialist environment. |
 | `<receiver>__molformer-c3` (3) | the molecule bundles above, `embeddings-molformer-c3`, `ridge-<receiver>__molformer-c3` | Use `configs/encoders/molformer-c3-mean-l9.yaml` and `configs/encoders/molformer-c3-eos-l12.yaml` for the two representation reads. |
 | `<receiver>__unimol2-1.1b` (3) | the molecule bundles above, `embeddings-unimol2-1.1b`, `ridge-<receiver>__unimol2-1.1b` | Use `configs/encoders/unimol2-1.1b.yaml`. |
-| `gemma-3-4b-it__chemfm-3b`, `gemma-3-12b-it__chemfm-3b`, `kimi-k2.6__chemfm-3b-mlp4` (3) | `molecule-domain`, `molecule-training-set`, `molecule-items`, `embeddings-chemfm-3b`, `ridge-gemma-3-{4b,12b}-it__chemfm-3b` or `ridge-kimi-k2.6__chemfm-3b` | Use `configs/encoders/chemfm-3b.yaml`; stored-vector inference is shown in [Quickstart step 4](../examples/README.md#4-ask-a-question). |
+| `gemma-3-4b-it__chemfm-3b`, `gemma-3-12b-it__chemfm-3b`, `kimi-k2.6__chemfm-3b-mlp4`, `kimi-k2.6__chemfm-3b-mlp4-all-tasks`, `gemma-3-12b-it__chemfm-3b-mlp4-all-tasks` (5) | `molecule-domain`, `molecule-training-set` (`molecule-training-set-all-tasks` for `*-all-tasks`), `molecule-items`, `embeddings-chemfm-3b`, `ridge-gemma-3-{4b,12b}-it__chemfm-3b` or `ridge-kimi-k2.6__chemfm-3b` | Use `configs/encoders/chemfm-3b.yaml`; stored-vector inference is shown in [Quickstart step 4](../examples/README.md#4-ask-a-question). |
 
 The Kimi K2.6 ESM-C 6B affine and four-token MLP connectors share a ridge bundle containing the union of
 their write layers. ESM-C 6B inputs are pooled layers 51 and 80; ChemFM-3B inputs use layer 27.
@@ -147,6 +147,7 @@ Ridge starts initialize new training runs.
 | embeddings MIMIC | Polymathic AI checkpoint `5.7_main/E20-D12-H1536-pt7-synced` (sha256 `1113846c2218…`) | | the source checkpoint listed here is not publicly released and no public license is stated for it; contact the authors before use. The public MIMIC 1.0, `polymathic-ai/MIMIC`, is tagged `mit` |
 | embeddings ChemFM-1B | `ChemFM/ChemFM-1B@f99dc2e8` | | **CC BY-NC 4.0** (non-commercial): the official repository's [LICENSE](https://github.com/TheLuoFengLab/ChemFM/blob/master/LICENSE), where the paper (arXiv:2410.21422, "Code availability") places the model checkpoints; the Hugging Face card's `mit` tag is metadata without a license text |
 | embeddings ChemFM-3B | `ChemFM/ChemFM-3B@c1464dd3` | | **CC BY-NC 4.0** (non-commercial), as ChemFM-1B: the official repository's [LICENSE](https://github.com/TheLuoFengLab/ChemFM/blob/master/LICENSE); the Hugging Face card's `mit` tag is metadata without a license text |
+| Rhea item sets (`rhea-items`) | Rhea release 142 (2026-09-02) reactions, with UniProtKB/Swiss-Prot 2026_03 proteins and ChEBI release 255 molecules | | **CC BY 4.0**: Rhea (SIB Swiss Institute of Bioinformatics), UniProt (as above) and ChEBI (as above) |
 | embeddings MoLFormer-c3 | `DeepChem/MoLFormer-c3-1.1B@9f1b9ea3` (code `ibm-research/MoLFormer-XL-both-10pct`) | | HF tags `mit` (code `apache-2.0`) |
 | embeddings Uni-Mol2 1.1B | unimol_tools 0.1.6 `unimolv2/1.1B` (checkpoint sha256 `48e1ba230119…`) | | `dptech/Uni-Mol2` HF tag `mit`; the checkpoint is that repository's `modelzoo/1.1B/checkpoint.pt` at revision `bf37d253` (same sha256) |
 | ridge starts (incl. ChemFM-3B and the ESM-C 6B ones) | fits to Gemma 3 4B/12B and Kimi K2.6 hidden states | | Our contributions: [CC BY 4.0](../LICENSE-ARTIFACTS.md). Each bundle's `license` field states the grant, the credit and the LLM's and specialist's terms, which also apply |
@@ -160,4 +161,4 @@ bundle are outside this grant and retain their own source-specific terms.
 Upstream source, LLM, and specialist terms remain applicable, including the non-commercial terms of ChemFM
 and PGLM-1B ([items](../LICENSE-ARTIFACTS.md#non-commercial-items)).
 
-BindingDB, Rhea, PFMbench, ProteinGym and the Neuronpedia SAE explanations are not redistributed; obtain them from their sources.
+BindingDB, PFMbench, ProteinGym and the Neuronpedia SAE explanations are not redistributed; obtain them from their sources.

@@ -1,4 +1,4 @@
-"""Check the 19 staged connector bundles against this checkout's chat config and run configs (read only).
+"""Check the 23 staged chat connector bundles against this checkout's chat config and run configs (read only).
 
     python release/check_connector_identity.py STAGED_CONNECTORS_DIR [--no-hash]
 

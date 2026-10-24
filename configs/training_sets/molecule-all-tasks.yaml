@@ -1,0 +1,16 @@
+# The molecule training set on all tasks: the released molecule training set's objects, with no task held out. Build:
+# python -m latent_interconnect.run.training_set --config configs/training_sets/molecule-all-tasks.yaml --pin
+# molecule-training-set-all-tasks
+destination: molecule-training-set-all-tasks
+domain: {name: molecule, data: {$pin: molecule-domain}}
+train_ids: {$pin: molecule-training-set/training_set}
+all_tasks: true
+screen:
+  fields: [describe, describe_def, definition, classes, functional_group_classes, parent_family, functional_parent,
+           mechanism_roles, class_graph, functional_parent_classes, name]
+  list_fields: {classes: "; ", functional_group_classes: "; ", parent_family: "; ", functional_parent: "; ",
+                mechanism_roles: "; ", class_graph: "; ", functional_parent_classes: "; "}
+  property_list_fields: []
+  element_parts: {class_graph: " > ", functional_parent_classes: " > "}
+  zero_shot_tasks: []
+  detectors: []

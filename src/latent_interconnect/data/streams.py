@@ -11,6 +11,8 @@ Rules every stream keeps:
 - **Screened text only.** A stream reads text from :class:`~latent_interconnect.data.training_text.TrainingText`
   alone, never from ``Domain.fields``, and asks only trained questions (``TaskScope.TRAINED``), so no
   zero-shot question or label is ever training content (``build.zero_shot.check_construction`` checks the mixture).
+  On an all-tasks training set (``TrainingText.all_tasks``: none held out, nothing screened) every task of the
+  catalog counts as trained (:func:`build_stream`).
 - **Determinism.** ``sample`` draws only from the generator it is given, so a step's examples are a function of the
   run seed and the step (``data.sampler``).
 - **Declared supervision.** :meth:`Stream.declare` (and an instance's :meth:`Stream.supervision`, the same) states
@@ -20,7 +22,8 @@ Rules every stream keeps:
   unscreened field, or write wording the screen matches.
 - **Label scope.** A stream is built on a :class:`ScopedDomain`: a label cell outside its task's scope
   (``Domain.scope_mask``) reads as unknown, so it is never a Yes and never a No, as a target, a stated fact or an
-  in-context example.
+  in-context example. On an all-tasks training set the scope is the one for training (``Domain.training_mask``:
+  without the rules that only keep a zero-shot score fair).
 - **No tokenizer.** Streams produce text and character spans; the renderer is the only module that tokenizes. Token
   caps are stated per target part (``receivers.render.TargetPart``) and applied by the renderer.
 
@@ -239,7 +242,7 @@ class _Fields(Mapping[str, Mapping[str, str]]):
 
 def restrict(text: TrainingText, fields: Collection[str], user: str) -> TrainingText:
     """Return ``text`` as ``user`` may read it: only ``fields``; reading another raises ``KeyError`` naming ``user``."""
-    return TrainingText(text.object_ids, _Fields(text.fields, frozenset(fields), user), text.removed)
+    return TrainingText(text.object_ids, _Fields(text.fields, frozenset(fields), user), text.removed, text.all_tasks)
 
 
 @dataclass(frozen=True)
@@ -261,11 +264,12 @@ class ScopedDomain(RestrictedDomain):
     """The view a stream is built on: a ``RestrictedDomain`` whose label columns honor the declared tasks' scope.
 
     A label cell outside its task's scope (``Domain.scope_mask``: a label the domain version declares unusable for
-    that object) is neither Yes nor No. The label column of a declared Yes/No task therefore reads such a cell as
-    unknown (a null), which every reader of the view keeps out of its Yes objects and its No objects alike: the
-    ``yes_no`` stream's pools, the scaffold's stated labels and give-away counts, the in-context examples. A column
-    whose tasks are scored on every object is returned as the domain holds it, and a column no declared task reads
-    (the variant stream's) has no scope.
+    that object, or one a zero-shot score leaves out) is neither Yes nor No. The label column of a declared Yes/No
+    task therefore reads such a cell as unknown (a null), which every reader of the view keeps out of its Yes objects
+    and its No objects alike: the ``yes_no`` stream's pools, the scaffold's stated labels and give-away counts, the
+    in-context examples. A column whose tasks are scored on every object is returned as the domain holds it, and a
+    column no declared task reads (the variant stream's) has no scope. A view of an all-tasks training set
+    (``all_trained``) reads each task's scope for training (``Domain.training_mask``), not its scope for scoring.
     """
 
     def labels(self, columns: Collection[str]) -> pd.DataFrame:
@@ -278,13 +282,11 @@ class ScopedDomain(RestrictedDomain):
         found = super().labels(columns)
         catalog = self._domain.tasks()
         yes_no = [t for t in sorted(self._tasks) if catalog[t].kind is TaskKind.YES_NO]
+        scope = self._domain.training_mask if self._all_trained else self._domain.scope_mask
         scoped = {}
         for column in found.columns:
             reading = [t for t in yes_no if catalog[t].label == column]
-            masks = [
-                self._domain.scope_mask(catalog[t], found.index).reindex(found.index).fillna(False).to_numpy(bool)
-                for t in reading
-            ]
+            masks = [scope(catalog[t], found.index).reindex(found.index).fillna(False).to_numpy(bool) for t in reading]
             if all(m.all() for m in masks):
                 continue
             if any(not np.array_equal(m, masks[0]) for m in masks[1:]):
@@ -303,14 +305,21 @@ def build_stream(name: str, params: Mapping[str, Any], domain: Domain, text: Tra
     The declaration (``Stream.declare``) comes first, from a values-free catalog of the domain and the params, so
     the stream (and the row transforms the sampler builds for it, which read the same views) cannot read a task,
     label column, table or field it did not declare. The zero-shot construction check builds streams the same way.
-    The domain view honors label scope (:class:`ScopedDomain`).
+    The domain view honors label scope (:class:`ScopedDomain`). On an all-tasks training text (``text.all_tasks``)
+    both views show every task as trained (``domains.views``), so the stream may train held-out and implied tasks.
     """
     cls = STREAMS.get(name)
     validated = cls.Params.model_validate(dict(params))
-    sup = cls.declare(DomainCatalog(domain), validated)
+    sup = cls.declare(DomainCatalog(domain, all_trained=text.all_tasks), validated)
     user = f"stream {name!r}"
     view = ScopedDomain(
-        domain, tasks=sup.tasks, labels=sup.labels, tables=sup.tables, objects=text.object_ids, user=user
+        domain,
+        tasks=sup.tasks,
+        labels=sup.labels,
+        tables=sup.tables,
+        objects=text.object_ids,
+        user=user,
+        all_trained=text.all_tasks,
     )
     restricted = restrict(text, sup.fields, user)
     return Built(cls(view, validated, restricted), view, restricted)

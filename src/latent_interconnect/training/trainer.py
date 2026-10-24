@@ -23,17 +23,33 @@ after which :meth:`Trainer.fit` raises :class:`Interrupted`. A run restarted on 
 it, and because every draw is step-indexed and the update is deterministic, it continues bit-for-bit as the
 uninterrupted run would have (on CPU; on GPUs as far as their kernels are deterministic, and only on the same
 accelerator model: a resume on another model is allowed and continues the same recipe without a bit-identity
-claim). The resume state is deleted when the final checkpoint is committed, and the run directory records the
-completed run (:data:`DONE_FILE`), so a relaunch returns its checkpoints instead of training again. When a run starts,
-the run directory also gets what its streams derived from the training text (:data:`DERIVED_FILE`); every
-:meth:`Trainer.fit`, a resume or a relaunch of a completed run, refuses to continue if the streams now derive anything
-else, and the resume state carries its digest. It also carries the execution (the backend's ``execution()`` and the
-options: :meth:`Trainer.execution`), as does the completed run's :data:`DONE_FILE`, and a resume or a relaunch under
-another one (e.g. ``kimi-ep`` with another ``checkpointing`` option, another dtype, attention implementation or
-device count) is refused, so the execution the run's record states is every job's. Not compared
-(:data:`RESUMABLE_ACROSS`): the weights directory (``execution()["weights"]``: the weights are identified by the pinned
-``revision``, ``build.capture.capture_origin``, and node-local copies differ) and the accelerator model
+claim). At the run's true final step, after its final checkpoint, the resume state is saved once more, atomically and
+without a log line, and only then does the run directory record the completed run (:data:`DONE_FILE`), so a relaunch
+returns its checkpoints instead of training again; a save that fails leaves no :data:`DONE_FILE`, and the next job
+resumes from the last state saved. The kept final state is what an extension continues (below); it costs the disk of
+one resume state per completed run (the connector's weights and the optimizer's two moments: about three times the
+weights). When a run starts, the run directory also gets what its streams derived from the training text
+(:data:`DERIVED_FILE`); every :meth:`Trainer.fit`, a resume or a relaunch of a completed run, refuses to continue if
+the streams now derive anything else, and the resume state carries its digest. It also carries the execution (the
+backend's ``execution()`` and the options: :meth:`Trainer.execution`), as does the completed run's :data:`DONE_FILE`,
+and a resume or a relaunch under another one (e.g. ``kimi-ep`` with another ``checkpointing`` option, another dtype,
+attention implementation or device count) is refused, so the execution the run's record states is every job's. Not
+compared (:data:`RESUMABLE_ACROSS`): the weights directory (``execution()["weights"]``: the weights are identified by
+the pinned ``revision``, ``build.capture.capture_origin``, and node-local copies differ) and the accelerator model
 (``execution()["device_name"]``): every segment records its own devices.
+
+**Extending a finished run.** :meth:`Trainer.extend` initializes the run directory of a run from the finished run of
+the config that equals it but for fewer ``steps`` (the ``train`` stage's ``extend_from`` option, ``run.train``, which
+authenticates the source's record first): the source's kept final state, log, derived data and segment ledger are
+copied, never its :data:`DONE_FILE`, with :data:`EXTENSION_FILE` naming the source (``provenance.Extension``) written
+last, into a staging directory that is then renamed to the run directory, so the directory appears initialized or not
+at all and the source is left as it was. :meth:`Trainer.fit` then resumes it as any run: at the source's final step,
+with its committed checkpoints, optimizer moments and sampler position (the step), and the earlier jobs in its ledger.
+Under a deterministic execution (the ``hf`` backend on CPU, as ``tests/unit/test_extend_from.py`` checks; CPU alone does
+not make every plugin deterministic) the result is the straight longer run's weights and updates; other executions
+continue the same recipe as far as they are deterministic, as a resume does. A source whose final step is off the
+checkpoint cadence adds its final checkpoint to the extended run's (a straight run has it only on the cadence). A
+schedule that reads the total (``OptimizerSpec.depends_on_total``) is refused.
 
 **Segments.** Each :meth:`Trainer.fit` is one job's share of the run (``provenance.Segment``), and it alone
 records the job in the run directory's segment ledger (:data:`SEGMENTS_FILE`, every job that worked on the run): when
@@ -79,11 +95,13 @@ import fcntl
 import json
 import os
 import pickle
+import shutil
 import signal
 import socket
 import sys
 import threading
 import time
+import uuid
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -106,7 +124,7 @@ from latent_interconnect.encoders.loader import Consumed, InputLoader
 from latent_interconnect.encoders.recipes import EncoderRecipe
 from latent_interconnect.encoders.store import EmbeddingReader
 from latent_interconnect.plugins import load_plugins
-from latent_interconnect.provenance import Segment
+from latent_interconnect.provenance import Extension, Segment
 from latent_interconnect.receivers import open_renderer, open_training
 from latent_interconnect.receivers.base import ScoringBackend, TrainingBackend
 from latent_interconnect.receivers.kernel import resolve_sources
@@ -115,7 +133,6 @@ from latent_interconnect.training.config import RunConfig
 from latent_interconnect.writes.checkpoint import (
     RESUME_FILE,
     ResumeState,
-    clear_resume_state,
     commit_checkpoint,
     load_resume_state,
     read_resume_summary,
@@ -131,12 +148,16 @@ __all__ = [
     "DERIVED_FILE",
     "DISCARDED_PREFIX",
     "DONE_FILE",
+    "EXTENSION_FILE",
+    "EXTENSION_STAGING",
     "LOCK_FILE",
     "LOG_FILE",
     "POSITION_BINS",
     "RESUMABLE_ACROSS",
     "SEGMENTS_FILE",
     "AchievedRun",
+    "CompletedRun",
+    "ExtensionError",
     "InJobEvaluator",
     "InputCache",
     "Interrupted",
@@ -144,9 +165,11 @@ __all__ = [
     "RunDirectoryBusyError",
     "Trainer",
     "achieved_run",
+    "completed_run",
     "earlier_segments",
     "input_loader",
     "place_connector",
+    "read_extension",
     "run_directory_lock",
 ]
 
@@ -157,13 +180,20 @@ DERIVED_FILE = "derived.json"
 in its run directory when the run starts and checked on every ``fit``; the train stage commits this file."""
 DONE_FILE = "done.json"
 """The completed run's committed checkpoints (``committed``: step → digest) and its ``execution``, in its run
-directory: a relaunch under the same execution returns them."""
+directory, written (atomically) after its kept final resume state: a relaunch under the same execution returns them."""
+EXTENSION_FILE = "extension.json"
+"""In the run directory of an extended run: its source (``provenance.Extension``), written last when
+:meth:`Trainer.extend` initializes the directory, so it marks a completed initialization and keeps the run's lineage
+for every later job, with or without the ``extend_from`` option."""
+EXTENSION_STAGING = ".extend."
+"""The prefix of the staging directory :meth:`Trainer.extend` fills beside the run directory before renaming it
+(``.extend.<run digest>.<source digest>.<hex>``); one a killed initialization left is removed by the next one."""
 SEGMENTS_FILE = "segments.json"
 """The run's segment ledger, in its run directory: every job that worked on the run (``provenance.Segment``)."""
 LOCK_FILE = "train.lock"
 """The run directory's producer lock (:func:`run_directory_lock`): never read for content by any other code, and
 outside the names the trainer itself writes or clears (``resume.pt``, ``resume.pt.<hex>``, ``.segments.json.<pid>``,
-``.log.jsonl.<pid>``)."""
+``.log.jsonl.<pid>``, ``.done.json.<pid>``)."""
 DISCARDED_PREFIX = "log.discarded."
 """The prefix of a file holding log lines a resume dropped (``log.discarded.<UTC time>.<pid>.jsonl``)."""
 _RESUME_ERRORS = (ValueError, TypeError, KeyError, RuntimeError, OSError, EOFError, pickle.UnpicklingError)
@@ -205,6 +235,10 @@ class ResumeRequiredError(ValueError):
 
 class RunDirectoryBusyError(RuntimeError):
     """Another process holds the run directory's :data:`LOCK_FILE`: one producer per run directory."""
+
+
+class ExtensionError(ValueError):
+    """A run cannot be extended from the run named as its source (:meth:`Trainer.extend`); nothing was written."""
 
 
 @contextmanager
@@ -259,6 +293,21 @@ def _owning_kind(name: str, kinds: Mapping[str, EntryMap]) -> str:
     raise TypeError(f"parameter {name!r} belongs to no map kind, so it has no learning-rate reference")
 
 
+def _segments(workspace: Path) -> tuple[Segment, ...]:
+    """Return the segment ledger of the run in ``workspace``, oldest first; () without one.
+
+    Raises:
+        ValueError: if the ledger is not a list of segments.
+    """
+    path = workspace / SEGMENTS_FILE
+    if not path.exists():
+        return ()
+    try:
+        return tuple(Segment.model_validate(entry) for entry in json.loads(path.read_text()))
+    except (ValueError, TypeError) as err:
+        raise ValueError(f"{path} is not a segment ledger: {err}") from err
+
+
 def _ledger(workspace: Path, segment: Segment) -> tuple[Segment, ...]:
     """Return the segments of the run in ``workspace`` before ``segment`` (this job), oldest first.
 
@@ -268,14 +317,7 @@ def _ledger(workspace: Path, segment: Segment) -> tuple[Segment, ...]:
     Raises:
         ValueError: if the ledger is not a list of segments.
     """
-    path = workspace / SEGMENTS_FILE
-    if not path.exists():
-        return ()
-    try:
-        ledger = [Segment.model_validate(entry) for entry in json.loads(path.read_text())]
-    except (ValueError, TypeError) as err:
-        raise ValueError(f"{path} is not a segment ledger: {err}") from err
-    return tuple(s for s in ledger if s.model_copy(update={"ended": segment.ended}) != segment)
+    return tuple(s for s in _segments(workspace) if s.model_copy(update={"ended": segment.ended}) != segment)
 
 
 def earlier_segments(workspace: Path, segment: Segment) -> tuple[Segment, ...]:
@@ -369,6 +411,91 @@ def achieved_run(config: RunConfig, store: ArtifactStore, workspace: Path) -> Ac
     return AchievedRun(summary.step, committed, executed, max(steps, default=0), kept, derived)
 
 
+@dataclass(frozen=True)
+class CompletedRun:
+    """A finished run with its kept final state, read from its run directory (:func:`completed_run`).
+
+    Attributes:
+        step: its final step (its config's ``steps``).
+        committed: step → committed checkpoint digest, :data:`DONE_FILE`'s and its kept state's.
+        execution: the execution it trained under (:data:`DONE_FILE`'s and its kept state's).
+        derived: the bytes of :data:`DERIVED_FILE`.
+        log: the bytes of :data:`LOG_FILE`.
+    """
+
+    step: int
+    committed: Mapping[int, str]
+    execution: Mapping[str, str]
+    derived: bytes
+    log: bytes
+
+
+def completed_run(config: RunConfig, workspace: Path) -> CompletedRun:
+    """Return the finished run of ``config`` in ``workspace``, checked; read only (no lock, nothing written).
+
+    It fails closed: :data:`DONE_FILE` must record the committed checkpoints from step 0 to ``config.steps`` and an
+    execution; the kept resume state must be at ``config.steps``, saved for the config's connector, and hold the same
+    checkpoints, the same execution and the digest of :data:`DERIVED_FILE`; every line of :data:`LOG_FILE` must parse
+    and its ``checkpoint`` lines must name exactly those checkpoints.
+
+    Raises:
+        ExtensionError: if a file is missing or unreadable, or a check above fails (a run completed without a kept
+            final state included).
+    """
+    name = config.name
+    try:
+        done = json.loads((workspace / DONE_FILE).read_text())
+        committed = {int(s): str(d) for s, d in done["committed"].items()}
+        execution = {str(k): str(v) for k, v in done["execution"].items()}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as err:
+        raise ExtensionError(f"run {name!r}: {workspace / DONE_FILE} does not record a completed run: {err!r}") from err
+    if 0 not in committed or max(committed) != config.steps:
+        raise ExtensionError(
+            f"run {name!r}: its committed steps {sorted(committed)} are not a run completed at {config.steps}"
+        )
+    try:
+        summary = read_resume_summary(workspace)
+    except (RuntimeError, EOFError, KeyError, ValueError, pickle.UnpicklingError) as err:
+        raise ExtensionError(f"run {name!r}: its {RESUME_FILE} cannot be read: {err!r}") from err
+    if summary is None:
+        raise ExtensionError(f"run {name!r}: {workspace} holds no kept final state ({RESUME_FILE})")
+    if summary.step != config.steps or summary.connector_sha != config.connector.digest():
+        raise ExtensionError(
+            f"run {name!r}: its {RESUME_FILE} is at step {summary.step} for connector config "
+            f"{summary.connector_sha[:12]}, not the final state of step {config.steps} for "
+            f"{config.connector.digest()[:12]}"
+        )
+    if summary.extra.get("committed") != {str(s): d for s, d in committed.items()}:
+        raise ExtensionError(f"run {name!r}: its {RESUME_FILE} and {DONE_FILE} hold other checkpoints")
+    if summary.extra.get("execution") != execution:
+        raise ExtensionError(f"run {name!r}: its {RESUME_FILE} and {DONE_FILE} record other executions")
+    try:
+        derived = (workspace / DERIVED_FILE).read_bytes()
+        log = (workspace / LOG_FILE).read_bytes()
+        derived_sha = canonical_sha256(json.loads(derived))
+        lines = [json.loads(ln) for ln in log.decode().splitlines() if ln]
+        logged = {int(x["step"]): x["checkpoint"] for x in lines if x["event"] == "checkpoint"}
+    except (OSError, ValueError, KeyError, TypeError) as err:
+        raise ExtensionError(f"run {name!r}: its {DERIVED_FILE} or {LOG_FILE} cannot be read: {err!r}") from err
+    if summary.extra.get("derived_sha256") != derived_sha:
+        raise ExtensionError(f"run {name!r}: its {RESUME_FILE} does not hold the derived data of {DERIVED_FILE}")
+    if logged != committed:
+        raise ExtensionError(f"run {name!r}: the checkpoints of its {LOG_FILE} are not its committed checkpoints")
+    return CompletedRun(config.steps, committed, execution, derived, log)
+
+
+def read_extension(workspace: Path) -> Extension | None:
+    """Return the source of the extended run in ``workspace`` (its :data:`EXTENSION_FILE`), or None for another run.
+
+    Raises:
+        ValueError: if the file does not hold an extension's source.
+    """
+    path = workspace / EXTENSION_FILE
+    if not path.is_file():
+        return None
+    return Extension.model_validate_json(path.read_text())
+
+
 def _replace(path: Path, text: str) -> None:
     """Atomically replace ``path`` with ``text`` (written beside it as ``.<name>.<pid>``, synced, renamed over it)."""
     tmp = path.with_name(f".{path.name}.{os.getpid()}")
@@ -377,6 +504,21 @@ def _replace(path: Path, text: str) -> None:
         fh.flush()
         os.fsync(fh.fileno())
     tmp.replace(path)
+
+
+def _sync_file(path: Path) -> None:
+    """Flush ``path`` to disk."""
+    with path.open("rb") as fh:
+        os.fsync(fh.fileno())
+
+
+def _sync_directory(path: Path) -> None:
+    """Flush the entries of the directory ``path`` (a rename in it) to disk."""
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
 
 
 def _write_ledger(workspace: Path, segments: Sequence[Segment]) -> None:
@@ -597,6 +739,107 @@ class Trainer:
         finally:
             mark()
 
+    def extend(self, source: RunConfig, directory: Path, *, computation_key: str, record_id: str) -> Extension:
+        """Initialize this run's directory from the finished run of ``source`` in ``directory``; return its origin.
+
+        The caller has authenticated ``directory`` as the run of the ``train`` record ``record_id`` (computation
+        ``computation_key``) of ``source`` (``run.train``). Checked first, writing nothing: this run's directory does
+        not exist; ``source`` is this run's config with fewer ``steps`` and no other change; the schedule does not read
+        the total (``OptimizerSpec.depends_on_total``); the source is a finished run with its kept final state
+        (:func:`completed_run`), whose derived data the streams derive now and whose execution this job may resume
+        (:meth:`_check_execution`, with its permitted differences, :data:`RESUMABLE_ACROSS`).
+
+        Then, under the source's producer lock (:func:`run_directory_lock`), the source is read again and must be
+        unchanged; its resume state, log, derived data and segment ledger (never its :data:`DONE_FILE`) are copied into
+        a new staging directory beside this run's (:data:`EXTENSION_STAGING`), synced, with :data:`EXTENSION_FILE`
+        written last, and the staging directory is renamed to this run's directory. So the run directory appears
+        initialized or not at all, and the source keeps every byte (its lock file records this job as its last holder,
+        as for any job on it). Staging directories of the same source and run that a killed initialization left are
+        removed first, under the same lock.
+
+        Returns:
+            The origin written to :data:`EXTENSION_FILE` (``provenance.Extension``): the source's config digest,
+            computation key, record id, final step and its number of ledger segments.
+
+        Raises:
+            ExtensionError: if a check fails, the source changed meanwhile, or this run's directory appeared meanwhile;
+                this run's directory was not written.
+            RunDirectoryBusyError: if another job holds the source's lock.
+        """
+        cfg, name = self.config, self.config.name
+        if self.workspace.exists():
+            raise ExtensionError(f"run {name!r}: {self.workspace} exists; an extension starts a new run directory")
+        if source.steps >= cfg.steps or source.model_copy(update={"steps": cfg.steps}).digest() != cfg.digest():
+            raise ExtensionError(
+                f"run {name!r}: the source config ({source.steps} steps) is not this config with fewer steps "
+                f"({cfg.steps}) and nothing else changed"
+            )
+        if cfg.optimizer.depends_on_total():
+            raise ExtensionError(
+                f"run {name!r}: its {cfg.optimizer.schedule} schedule reads the total steps, so the source's updates "
+                "are not this run's"
+            )
+        found = completed_run(source, directory)
+        derived = canonical_sha256(json.loads(found.derived))
+        if derived != canonical_sha256(self.derived):
+            raise ExtensionError(
+                f"run {name!r}: the source trained on derived data {derived[:12]}, the streams now derive "
+                f"{canonical_sha256(self.derived)[:12]}"
+            )
+        try:
+            self._check_execution(found.execution)
+        except ValueError as err:
+            raise ExtensionError(f"the source's execution cannot be continued by this job: {err}") from err
+        parent = self.workspace.parent
+        prefix = f"{EXTENSION_STAGING}{self.workspace.name}.{directory.name}."
+        with run_directory_lock(directory):
+            if completed_run(source, directory) != found:
+                raise ExtensionError(f"run {name!r}: the source run in {directory} changed while it was checked")
+            for orphan in parent.glob(f"{prefix}*"):  # a killed initialization's; the lock excludes a live one
+                shutil.rmtree(orphan)
+            staging = parent / f"{prefix}{uuid.uuid4().hex}"
+            staging.mkdir()
+            try:
+                origin = Extension(
+                    config_sha=source.digest(),
+                    computation_key=computation_key,
+                    record_id=record_id,
+                    step=found.step,
+                    segments=self._stage_extension(directory, staging, found),
+                )
+                path = staging / EXTENSION_FILE
+                path.write_text(canonical_json(origin.model_dump(mode="json")))
+                _sync_file(path)
+                _sync_directory(staging)
+                if self.workspace.exists():
+                    raise ExtensionError(f"run {name!r}: {self.workspace} appeared while it was initialized")
+                try:
+                    staging.rename(self.workspace)
+                except OSError as err:
+                    raise ExtensionError(f"run {name!r}: {self.workspace} appeared while it was initialized") from err
+            except BaseException:
+                shutil.rmtree(staging, ignore_errors=True)
+                raise
+            _sync_directory(parent)
+        return origin
+
+    def _stage_extension(self, directory: Path, staging: Path, found: CompletedRun) -> int:
+        """Copy the source's run files but :data:`DONE_FILE` into ``staging``, synced and checked (:meth:`extend`).
+
+        Returns:
+            The number of segments in the copied ledger.
+        """
+        names = [RESUME_FILE, LOG_FILE, DERIVED_FILE]
+        if (directory / SEGMENTS_FILE).exists():
+            names.append(SEGMENTS_FILE)
+        for n in names:
+            shutil.copyfile(directory / n, staging / n)
+            _sync_file(staging / n)
+        summary = read_resume_summary(staging)
+        if summary is None or summary.step != found.step or (staging / LOG_FILE).read_bytes() != found.log:
+            raise ExtensionError(f"run {self.config.name!r}: the copy of the source in {staging} is not the source")
+        return len(_segments(staging))
+
     def _restore(self, optimizer: torch.optim.Optimizer) -> tuple[int, dict[int, ArtifactRef]] | None:
         """Load the run's resume state into the connector and ``optimizer``, checked; writes nothing.
 
@@ -666,21 +909,30 @@ class Trainer:
                 if step < cfg.steps and step % cfg.checkpoints.resume_every == 0:
                     self._save(optimizer, step, committed)
                     mark()  # a job killed without notice counts to the state the next job resumes from
+            self._keep(optimizer, step, committed)  # the true final state, before the run is declared complete
         body = {"committed": {str(s): r.sha256 for s, r in sorted(committed.items())}}
         body["execution"] = self.execution()
-        done.write_text(json.dumps(body))
-        clear_resume_state(self.workspace)
+        _replace(done, json.dumps(body))
         return dict(committed)
 
     def _save(self, optimizer: torch.optim.Optimizer, step: int, committed: Mapping[int, ArtifactRef]) -> None:
-        extra = {
+        """Save the resume state after ``step`` updates and log the save (``resume_state``) with its seconds."""
+        extra = self._extra(committed)
+        start = time.perf_counter()
+        save_resume_state(self.connector, optimizer.state_dict(), step, self.workspace, extra)
+        self._log({"event": "resume_state", "step": step, "sec": time.perf_counter() - start})
+
+    def _keep(self, optimizer: torch.optim.Optimizer, step: int, committed: Mapping[int, ArtifactRef]) -> None:
+        """Save the final resume state, after the run's last update, as :meth:`_save` does but logging nothing."""
+        save_resume_state(self.connector, optimizer.state_dict(), step, self.workspace, self._extra(committed))
+
+    def _extra(self, committed: Mapping[int, ArtifactRef]) -> dict[str, Any]:
+        """What a resume state holds beside the tensors: the committed checkpoints, the derived data, the execution."""
+        return {
             "committed": {str(s): r.sha256 for s, r in committed.items()},
             "derived_sha256": canonical_sha256(self.derived),
             "execution": self.execution(),
         }
-        start = time.perf_counter()
-        save_resume_state(self.connector, optimizer.state_dict(), step, self.workspace, extra)
-        self._log({"event": "resume_state", "step": step, "sec": time.perf_counter() - start})
 
     def optimizer(self) -> torch.optim.AdamW:
         """Place the maps and their step-0 references (:meth:`_place`); return the run's AdamW, without state yet.

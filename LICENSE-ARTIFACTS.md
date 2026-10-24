@@ -48,7 +48,7 @@ below, which are outside that grant:
 - **ChemFM** (CC BY-NC 4.0, per the [LICENSE](https://github.com/TheLuoFengLab/ChemFM/blob/master/LICENSE) of
   github.com/TheLuoFengLab/ChemFM): the connectors `*__chemfm-1b` and `*__chemfm-3b*` (including
   `kimi-k2.6__chemfm-3b-mlp4`), their ridge starts `ridge-*__chemfm-1b` and `ridge-*__chemfm-3b`, the minimal
-  evaluation set `molecule-chemfm-1b-mini`, and the embedding data bundles `embeddings-chemfm-1b` and
-  `embeddings-chemfm-3b`.
+  evaluation set `molecule-chemfm-1b-mini`, and the embedding data bundles `embeddings-chemfm-1b`,
+  `embeddings-chemfm-3b` and `embeddings-chemfm-3b-rhea`.
 - **PGLM-1B** (Creative Commons Attribution-NonCommercial 4.0, per its model card): the connectors `*__pglm-1b`,
   their ridge starts `ridge-*__pglm-1b`, and the embedding data bundle `embeddings-pglm-1b`.

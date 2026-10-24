@@ -1,0 +1,7 @@
+# The publication of the stopped all-tasks ESM-C 6B four-token MLP run (run.achieved): the achieved checkpoints and log
+# of esmc-6b-mlp4-staggered-all-tasks.yaml, without a fit, on CPU, pinned under
+# connectors/kimi-k2.6/esmc-6b-mlp4-staggered-all-tasks (step 4,800 is the released connector). Run it only once every
+# job of the run has ended.
+destination: connectors/kimi-k2.6/esmc-6b-mlp4-staggered-all-tasks
+run: {$ref: esmc-6b-mlp4-staggered-all-tasks.yaml}
+device_class: cpu

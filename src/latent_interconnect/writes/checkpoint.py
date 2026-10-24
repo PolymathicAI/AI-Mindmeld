@@ -9,10 +9,11 @@ solutions needed.
 
 **Retention.**
 
-- *Resume state* (weights + optimizer + step, written every ``CheckpointSpec.resume_every`` steps and on SIGUSR1;
-  :func:`save_resume_state`, :func:`load_resume_state`) is a run-scoped file (``Paths.runs``), overwritten
-  atomically. It is not an artifact and is never hashed; the run's last resume state is deleted when the run's final
-  checkpoint is committed (:func:`clear_resume_state`).
+- *Resume state* (weights + optimizer + step, written every ``CheckpointSpec.resume_every`` steps, on SIGUSR1 and
+  at the run's final step; :func:`save_resume_state`, :func:`load_resume_state`) is a run-scoped file
+  (``Paths.runs``), overwritten atomically. It is not an artifact and is never hashed. The final one is kept with the
+  completed run, so the run can be extended to more steps (``training.trainer``); :func:`clear_resume_state` deletes a
+  run's state.
 - *Committed checkpoints* (weights only, no optimizer) are made at step 0, at every step a suite evaluates, and at the
   end. Only these are content-addressed, cited and kept.
 - Files are hashed once, at commit; :meth:`~latent_interconnect.artifacts.store.ArtifactStore.verify` re-checks them
@@ -157,7 +158,11 @@ def read_resume_summary(workspace: Path) -> ResumeSummary | None:
 
 
 def clear_resume_state(workspace: Path) -> None:
-    """Delete the run's resume state (done when the run's final checkpoint is committed); no state is not an error."""
+    """Delete the run's resume state; no state is not an error.
+
+    The trainer keeps a completed run's final state; deleting it frees its disk, and the run can then no longer be
+    extended.
+    """
     (workspace / RESUME_FILE).unlink(missing_ok=True)
 
 

@@ -48,10 +48,10 @@ curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh
 export PATH="${UV_INSTALL_DIR:-$HOME/.local/bin}:$PATH"
 ```
 
-Clone release v1.0.0 of the repository:
+Clone release v1.1.0 of the repository:
 
 ```bash
-git clone --branch v1.0.0 https://github.com/PolymathicAI/AI-Mindmeld.git "$AIMM" && cd "$AIMM"
+git clone --branch v1.1.0 https://github.com/PolymathicAI/AI-Mindmeld.git "$AIMM" && cd "$AIMM"
 uv venv --python 3.12 .venv && source .venv/bin/activate
 uv pip install --index-strategy unsafe-best-match -r env/locks/release.txt
 uv pip install --no-deps -e '.[dev,hf,chat]'
@@ -78,7 +78,7 @@ called a receiver config in the download report.
 
 ```bash
 python -m latent_interconnect.release_download \
-  --repo sgolkar/ai-mindmeld-connectors --revision 72a79954ec2780f49f96ccf3a4bdaf0d19642f6b \
+  --repo sgolkar/ai-mindmeld-connectors --revision f69ffac6715789f730ef0985ef54ae82c7051954 \
   --connector gemma-3-4b-it__esmc-600m --connector gemma-3-4b-it__chemfm-1b \
   --data protein-esmc-600m-mini --data molecule-chemfm-1b-mini \
   --dest $LIP_DATA
@@ -279,7 +279,7 @@ uv pip install --python .venv-mimic/bin/python --index-strategy unsafe-best-matc
   torch transformers huggingface-hub \
   "mimic @ git+https://github.com/PolymathicAI/MIMIC.git@9e652f16491e6c2e3881111e24b285c288554275" -e $AIMM
 python -m latent_interconnect.release_download \
-  --repo sgolkar/ai-mindmeld-connectors --revision 72a79954ec2780f49f96ccf3a4bdaf0d19642f6b \
+  --repo sgolkar/ai-mindmeld-connectors --revision f69ffac6715789f730ef0985ef54ae82c7051954 \
   --connector gemma-3-4b-it__mimic --dest $LIP_DATA
 printf '>ubiquitin\nMQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG\n' > my.fasta
 .venv-mimic/bin/python $AIMM/examples/embed_mimic.py \

@@ -1,0 +1,12 @@
+# kimi-k2.6's molecule-access-novel-scaffold suite for the chemfm-3b-mlp4-all-tasks connector at step 4800.
+destination: connectors/kimi-k2.6/chemfm-3b-mlp4-all-tasks/molecule-access-novel-scaffold/trained
+suite: {$ref: ../../suite_specs/kimi-k2.6/molecule-access-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/kimi-k2.6.yaml}
+checkpoints:
+  m: {$pin: connectors/kimi-k2.6/chemfm-3b-mlp4-all-tasks/step_004800}
+inputs:
+  m:
+  - {$pin: embeddings/chemfm-3b/molecule-eval-novel-scaffold}
+step: 4800
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768}

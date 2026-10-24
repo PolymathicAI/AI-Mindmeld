@@ -1,4 +1,4 @@
-"""Entry point: build the zero-shot-screened training set."""
+"""Entry point: build the zero-shot-screened training set, or an all-tasks one, which screens nothing."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ import pandas as pd
 
 from latent_interconnect.artifacts.store import ArtifactRef
 from latent_interconnect.build.zero_shot import TrainingSetSpec, build_training_set
-from latent_interconnect.data.items import ITEM_SET_KIND
 from latent_interconnect.domains.base import DOMAIN_DATA_KIND
 from latent_interconnect.run._main import Stage, StageResult, stage_main
 from latent_interconnect.workspace import Workspace
@@ -21,7 +20,7 @@ def _run(config: TrainingSetSpec, ws: Workspace) -> StageResult:
     ref = build_training_set(config, ws.artifacts)
     inputs = {
         "domain": ArtifactRef(config.domain.data, DOMAIN_DATA_KIND),
-        "train_ids": ArtifactRef(config.train_ids, ITEM_SET_KIND),
+        "train_ids": ws.artifacts.ref(config.train_ids),  # an item set, or a training set whose objects are used
     }
     return StageResult(outputs={"training_set": ref}, inputs=inputs, packages={"pandas": pd.__version__})
 

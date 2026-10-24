@@ -157,8 +157,9 @@ hf download moonshotai/Kimi-K2.6 --revision 7eb5002f6aadc958aed6a9177b7ed26bb940
 ```
 
 For a copy on another disk, add `--option weights=DIR`; keep the pinned cache snapshot because the
-backend checks the copy against it. The default deployment offers only the ESM-C 6B four-token MLP
-connector (**8.06 GB**). Download it and its inputs from the release environment:
+backend checks the copy against it. The default deployment offers the ESM-C 6B four-token MLP
+connector (**8.06 GB**) and the two Kimi connectors trained on all tasks. Download the first and its inputs from the
+release environment:
 
 ```bash
 python -m latent_interconnect.release_download --connector kimi-k2.6__esmc-6b-mlp4-staggered \

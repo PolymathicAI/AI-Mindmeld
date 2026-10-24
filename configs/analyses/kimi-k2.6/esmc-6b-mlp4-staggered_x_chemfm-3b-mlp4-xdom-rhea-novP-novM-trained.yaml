@@ -1,0 +1,25 @@
+# The cross-domain quads analysis of kimi-k2.6's Rhea suite, cell novP-novM, for the esmc-6b-mlp4-staggered x
+# chemfm-3b-mlp4 pair at step 2000; its D own-own cell is the pair's score.
+destination: connectors/kimi-k2.6/esmc-6b-mlp4-staggered_x_chemfm-3b-mlp4/xdom-rhea-novP-novM/trained/cross-domain-quads
+id: xdom/rhea/novP-novM/kimi-k2.6/esmc-6b-mlp4-staggered_x_chemfm-3b-mlp4
+kind: cross_domain_quads
+inputs: {xd: {$pin: connectors/kimi-k2.6/esmc-6b-mlp4-staggered_x_chemfm-3b-mlp4/xdom-rhea-novP-novM/trained@record}}
+params:
+  cells:   # protein condition - molecule condition, all at step 2000 of the one input
+    D own-own:               {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: own, molecule: own}}
+    A name-value:            {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: name, molecule: value}}
+    B name-own:              {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: name, molecule: own}}
+    C own-value:             {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: own, molecule: value}}
+    name-name:               {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: name, molecule: name}}
+    own-name:                {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: own, molecule: name}}
+    placeholder-own:         {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: placeholder, molecule: own}}
+    own-placeholder:         {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: own, molecule: placeholder}}
+    placeholder-placeholder: {encoder: esmc-6b-l51l80 x chemfm-3b, inputs: [xd], step: 2000, conditions: {protein: placeholder, molecule: placeholder}}
+  contrasts:
+    - {name: B minus A, a: B name-own, b: A name-value}
+    - {name: D minus C, a: D own-own, b: C own-value}
+    - {name: C minus A, a: C own-value, b: A name-value}
+    - {name: D minus B, a: D own-own, b: B name-own}
+    - {name: D minus A, a: D own-own, b: A name-value}
+    - {name: own minus names, a: D own-own, b: name-name}
+units: {factors: [protein_cluster, molecule_group], interval: shared_unit}   # the item set's swap-quad units

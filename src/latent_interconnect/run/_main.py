@@ -34,7 +34,7 @@ from typing import Any, TypeVar
 from latent_interconnect.artifacts.records import CanonicalChoice, Purpose, Record, ResolvedRecords
 from latent_interconnect.artifacts.store import ArtifactRef
 from latent_interconnect.config import DESTINATION, Config, OptionError, Pin, StageConfig, bind_options
-from latent_interconnect.provenance import DeviceClass, Segment, visible_devices
+from latent_interconnect.provenance import DeviceClass, Extension, Segment, visible_devices
 from latent_interconnect.receivers.base import IDENTITY_PARAMETERS, Capability, ReceiverSpec
 from latent_interconnect.workspace import PinConflictError, Workspace
 
@@ -102,6 +102,8 @@ class StageResult:
             this and its inputs' (``Workspace.purpose``).
         resumed: the earlier jobs of a resumed execution (``Provenance.resumed``; the ``train`` stage's, from its
             segment ledger), recorded so the execution's cost covers every job.
+        extended_from: the source of an extended training run (``Provenance.extended_from``; the ``train`` stage's
+            ``extend_from`` option), or None. The source record is also listed in :attr:`records`.
     """
 
     outputs: Mapping[str, ArtifactRef]
@@ -112,6 +114,7 @@ class StageResult:
     execution: Mapping[str, str] = field(default_factory=dict)
     purpose: Purpose = "result"
     resumed: tuple[Segment, ...] = ()
+    extended_from: Extension | None = None
 
 
 @dataclass(frozen=True)
@@ -397,6 +400,7 @@ def stage_main(argv: Sequence[str] | None, stage: str, model: type[C], run: Call
             "pins": {name: pin.sha256 for name, pin in cited.items()},
             "resumed": result.resumed,
             "input_executions": {role: rec.record_id() for role, rec in sorted(result.records.items())},
+            "extended_from": result.extended_from,
         }
     )
     declared: Purpose = "anchor" if args.purpose == "anchor" else result.purpose

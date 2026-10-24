@@ -1,0 +1,57 @@
+# The Gemma 3 12B x ChemFM-3B multi-token MLP run trained on all tasks: the connector of
+# ../kimi-k2.6/chemfm-3b-mlp4-all-tasks.yaml with every token at chemfm-3b.yaml's write layers [4, 9, 17, 23, 31, 41],
+# on the all-tasks training set and mixture, for 5,000 steps. Micro-batch 4 needs a GPU of 94 GB or more.
+destination: connectors/gemma-3-12b-it/chemfm-3b-mlp4-all-tasks
+name: chemfm-3b-mlp4-all-tasks
+connector:
+  name: chemfm-3b-mlp4
+  receiver: gemma-3-12b-it
+  input: {recipe: chemfm-3b, layers: {$ref: ../../shared/read-chemfm-3b.yaml}, combine: concat}
+  tokens:
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+    - {target: name_described, noise: 0.03}
+  layer0: constant
+  layers:
+    rule: explicit
+    per_token:
+      - [4, 9, 17, 23, 31, 41]
+      - [4, 9, 17, 23, 31, 41]
+      - [4, 9, 17, 23, 31, 41]
+      - [4, 9, 17, 23, 31, 41]
+  kind: mlp
+  kind_params: {d_s: 2560, ff_mult: 4}
+  alpha:
+    first: null
+    init: 0.5
+    learned: true
+    budget: null
+    per_layer: {4: 0.711746, 9: 0.9, 17: 0.656624, 23: 0.190535, 31: 0.1, 41: 0.1}  # every token
+  seed: 0
+  layer_choice: {decisions: [], note: "every token at the ordinary gemma-3-12b-it ChemFM-3B connector's write layers,
+      from its starting alphas; four tokens, not staggered"}
+receiver: {$ref: ../../receivers/gemma-3-12b-it.yaml}
+encoder: {$ref: ../../encoders/chemfm-3b.yaml}
+domain: {name: molecule, data: {$pin: molecule-domain}}
+ridge: {name_described: {$pin: ridges/gemma-3-12b-it/chemfm-3b}}
+embeddings:
+  - {$pin: embeddings/chemfm-3b/molecule-train}
+  - {$pin: embeddings/chemfm-3b/molecule-monitor}
+training_set: {$pin: molecule-training-set-all-tasks/training_set}
+mixture: {$ref: ../../training/gemma-3-12b-it/mixture-molecule-all-tasks.yaml}
+steps: 5000
+batch: 85
+micro_batch: 4
+seed: 0
+device_class: A100
+optimizer:
+  lr_rel: 0.002
+  lr_alpha: 0.01
+  warmup_steps: 20
+  schedule: constant
+  weight_decay: 0.0001
+  clip: 1.0
+checkpoints: {$ref: ../../training/checkpoints.yaml}
+eval_suite: {$ref: ../../monitor/molecule.yaml}
+eval_every: 200

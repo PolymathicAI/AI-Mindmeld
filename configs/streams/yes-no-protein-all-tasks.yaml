@@ -1,0 +1,168 @@
+# yes-no-protein.yaml with two questions added for each of the 14 held-out and 3 implied tasks, for training on all
+# tasks.
+templates:
+- id: yn_01
+  user: Consider the protein<SLOT:x>. {question} Answer with Yes or No.
+- id: yn_02
+  user: '<SLOT:x>
+
+    {question} (Yes/No)'
+- id: yn_03
+  user: 'Protein:<SLOT:x>
+
+    Question: {question}
+
+    Answer (Yes or No):'
+- id: yn_04
+  user: 'About the protein<SLOT:x>: {question} Reply with a single word, Yes or No.'
+- id: yn_05
+  user: 'Quick yes-or-no question about<SLOT:x>: {question}'
+- id: yn_06
+  user: '{question} The protein in question is<SLOT:x>. Answer Yes or No.'
+- id: yn_07
+  user: I'm sorting a list of proteins into categories for a review article. The current one is<SLOT:x>. {question} Please
+    answer only Yes or No.
+- id: yn_08
+  user: 'Given the embedding<SLOT:x>, answer Yes or No: {question}'
+- id: yn_09
+  user: Answer Yes or No. {question} Protein:<SLOT:x>
+- id: yn_10
+  user: For the protein represented by<SLOT:x>, answer the following with Yes or No. {question}
+- id: yn_11
+  user: Embedding:<SLOT:x>. {question} Respond Yes or No.
+- id: yn_12
+  user: A protein is given as<SLOT:x>. {question} Yes or no?
+questions:
+  Membrane:
+  - Is it located in a membrane?
+  - Is it a membrane protein?
+  Cytoplasm:
+  - Is it found in the cytoplasm?
+  - Is it a cytoplasmic protein?
+  Secreted:
+  - Is it secreted?
+  - Is it released outside the cell?
+  Mitochondrion:
+  - Is it located in mitochondria?
+  - Is it a mitochondrial protein?
+  Transferase:
+  - Is it a transferase?
+  - Does it transfer a chemical group from one molecule to another?
+  Oxidoreductase:
+  - Is it an oxidoreductase?
+  - Does it catalyze an oxidation-reduction reaction?
+  Kinase:
+  - Is it a kinase?
+  - Does it phosphorylate other molecules?
+  DNA-binding:
+  - Does it bind DNA?
+  - Is it a DNA-binding protein?
+  RNA-binding:
+  - Does it bind RNA?
+  - Is it an RNA-binding protein?
+  Ribosomal protein:
+  - Is it a component of the ribosome?
+  - Is it a ribosomal protein?
+  Transport:
+  - Is it involved in transport?
+  - Does it transport molecules or ions?
+  Transcription regulation:
+  - Does it regulate transcription?
+  - Is it a transcriptional regulator?
+  Chaperone:
+  - Is it a chaperone?
+  - Does it help other proteins fold?
+  Hydrolase:
+  - Is it a hydrolase?
+  - Does it catalyze a hydrolysis reaction?
+  Nucleus:
+  - Is it located in the nucleus?
+  - Is it a nuclear protein?
+  Lyase:
+  - Is it a lyase?
+  - Does this enzyme belong to the lyase class?
+  Ligase:
+  - Is it a ligase?
+  - Does it join two molecules as a ligase?
+  Isomerase:
+  - Is it an isomerase?
+  - Does it catalyze an isomerization?
+  Cell membrane:
+  - Is it located in the cell membrane?
+  - Is it found in the plasma membrane?
+  Plastid:
+  - Is it located in a plastid?
+  - Is it found in the chloroplast or another plastid?
+  DNA repair:
+  - Is it involved in DNA repair?
+  - Does it take part in repairing damaged DNA?
+  Photosynthesis:
+  - Is it involved in photosynthesis?
+  - Does it take part in photosynthesis?
+  Amino-acid biosynthesis:
+  - Is it involved in amino-acid biosynthesis?
+  - Does it take part in the biosynthesis of amino acids?
+  Protein biosynthesis:
+  - Is it involved in protein biosynthesis?
+  - Does it take part in translation (protein synthesis)?
+  Bacillota:
+  - Is it from a bacterium of the phylum Bacillota (Firmicutes)?
+  - Is it a Bacillota protein?
+  Metazoa:
+  - Is it from an animal?
+  - Is it an animal protein?
+  Vertebrata:
+  - Is it from a vertebrate?
+  - Is it a vertebrate protein?
+  Mammalia:
+  - Is it from a mammal?
+  - Is it a mammalian protein?
+  Fungi:
+  - Is it from a fungus?
+  - Is it a fungal protein?
+  Length>320:
+  - Is it longer than 320 amino acids?
+  - Does its sequence have more than 320 residues?
+  Magnesium:
+  - Does it bind magnesium?
+  - Is it a magnesium-binding protein?
+  Repeat:
+  - Does it contain internal sequence repeats?
+  - Does its sequence contain repeated regions?
+  Coiled coil:
+  - Does it contain a coiled-coil region?
+  - Does it form a coiled coil?
+  Acetylation:
+  - Is it acetylated?
+  - Does it carry an acetyl modification?
+  Bacteria:
+  - Is it from a bacterium?
+  - Is it a bacterial protein?
+  Eukaryota:
+  - Is it from a eukaryote?
+  - Is it a eukaryotic protein?
+  Disulfide bond:
+  - Does it contain disulfide bonds?
+  - Does it have disulfide bridges?
+  Glycoprotein:
+  - Is it glycosylated?
+  - Is it a glycoprotein?
+  Pseudomonadota:
+  - Is it from a bacterium of the phylum Pseudomonadota (Proteobacteria)?
+  - Is it a Pseudomonadota protein?
+  Phosphoprotein:
+  - Is it phosphorylated?
+  - Is it a phosphoprotein?
+  Zinc:
+  - Does it bind zinc?
+  - Is it a zinc-binding protein?
+sampling: cluster_sqrt
+answers:
+  'yes': 'Yes'
+  'no': 'No'
+weights:
+  family: single_token
+  floor: 0.1
+scaffold: {$ref: scaffold-protein.yaml}
+context: {$ref: context-protein.yaml}
+grammar: {$ref: grammar-protein.yaml}

@@ -1,0 +1,12 @@
+# gemma-3-12b-it's molecule-access-novel-scaffold suite for the chemfm-3b-mlp4-all-tasks connector at step 5000.
+destination: connectors/gemma-3-12b-it/chemfm-3b-mlp4-all-tasks/molecule-access-novel-scaffold/trained
+suite: {$ref: ../../suite_specs/gemma-3-12b-it/molecule-access-novel-scaffold.yaml}
+receiver: {$ref: ../../receivers/gemma-3-12b-it.yaml}
+checkpoints:
+  m: {$pin: connectors/gemma-3-12b-it/chemfm-3b-mlp4-all-tasks/step_005000}
+inputs:
+  m:
+  - {$pin: embeddings/chemfm-3b/molecule-eval-novel-scaffold}
+step: 5000
+device_class: A100
+plan: {planner: length-stable/v1, budget_tokens: 32768, pad_every_batch: true}

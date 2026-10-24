@@ -33,6 +33,13 @@ from latent_interconnect.config import Pin, load_config, load_resolved
 KIMI = "kimi-k2.6"
 STAGGERED = "esmc-6b-mlp4-staggered"
 KIMI_WEIGHTS = cli._kimi_weights  # the real check, before the fixture fakes it
+ALL_TASKS = [
+    ("gemma-3-12b-it", "esmc-6b-mlp4-all-tasks", 5000, "protein", "esmc-6b"),
+    ("gemma-3-12b-it", "chemfm-3b-mlp4-all-tasks", 5000, "molecule", "chemfm-3b"),
+    (KIMI, f"{STAGGERED}-all-tasks", 4800, "protein", "esmc-6b"),
+    (KIMI, "chemfm-3b-mlp4-all-tasks", 4800, "molecule", "chemfm-3b"),
+]
+"""The four connectors trained on all tasks: receiver, connector id, released step, domain, specialist."""
 
 
 def test_the_shipped_config_offers_both_gemma_models_and_kimi_with_named_connectors():
@@ -40,13 +47,76 @@ def test_the_shipped_config_offers_both_gemma_models_and_kimi_with_named_connect
     assert sorted(raw["receivers"]) == ["gemma-3-12b-it", "gemma-3-4b-it", KIMI]
     assert "esmc-600m" in raw["receivers"]["gemma-3-4b-it"]["connectors"]
     assert "esmc-600m" in raw["receivers"]["gemma-3-12b-it"]["connectors"]
-    assert list(raw["receivers"][KIMI]["connectors"]) == [STAGGERED]
+    assert list(raw["receivers"][KIMI]["connectors"]) == [STAGGERED, *(c for r, c, *_ in ALL_TASKS if r == KIMI)]
+    for rid, cid, step, *_ in ALL_TASKS:
+        assert raw["receivers"][rid]["connectors"][cid]["step"] == step, cid
     for receiver in raw["receivers"].values():
         for cid, entry in receiver["connectors"].items():
             assert "tested" not in entry["label"], cid  # display labels carry no test status
             assert cid in cli.BUNDLES
             if cid in {"mimic", "pglm-1b"}:  # the release install cannot encode their raw sequences
                 assert "raw sequence unavailable" in entry["label"]
+
+
+def test_every_connector_of_the_full_chat_config_has_a_download_hint():
+    """Each connector of ``configs/chat/all-connectors.yaml`` has its data bundles in ``BUNDLES``; the all-tasks ones
+    name the all-tasks training set of their domain, never the released one."""
+    raw = cli.load_yaml((cli.DEFAULT_CONFIG.parent / "all-connectors.yaml").read_text())
+    for rid, receiver in raw["receivers"].items():
+        for cid in receiver["connectors"]:
+            names = cli._bundles(rid, cid)
+            assert names[0] == f"{rid}__{cid}"
+            assert len(names) == 6, cid  # the connector, domain, training set, items, embeddings, ridge start
+            (training_set,) = [n for n in names if "-training-set" in n]
+            assert training_set.endswith("-all-tasks") == cid.endswith("-all-tasks"), cid
+    hint = cli._download_hint(KIMI, [f"{STAGGERED}-all-tasks"])
+    assert "--connector kimi-k2.6__esmc-6b-mlp4-staggered-all-tasks" in hint
+    assert "--data protein-training-set-all-tasks" in hint
+    assert "--data ridge-kimi-k2.6__esmc-6b" in hint
+
+
+@pytest.mark.parametrize(("receiver", "connector", "step", "domain", "specialist"), ALL_TASKS)
+def test_the_default_command_selects_each_connector_trained_on_all_tasks(
+    monkeypatch, tmp_path, receiver, connector, step, domain, specialist
+):
+    """Through the default config (``cli.DEFAULT_CONFIG``, ``configs/chat/release.yaml``), with stand-in pins for
+    every pin it needs: the connector is selectable, and its narrowed config loads at its released checkpoint with the
+    receiver's settings of the default config."""
+    monkeypatch.setattr(cli, "_workspace_pins", _all_pins)
+    assert cli._choose(cli.DEFAULT_CONFIG, receiver, [connector]) == [connector]
+    narrowed = tmp_path / "chat.json"
+    narrowed.write_text(json.dumps(cli.narrowed_config(cli.DEFAULT_CONFIG, receiver, [connector])))
+    entry = load_config(narrowed, ChatConfig, _all_pins()).receivers[receiver]
+    assert list(entry.connectors) == [connector]
+    assert entry.connectors[connector].checkpoint_pin == f"connectors/{receiver}/{connector}/step_{step:06d}"
+    assert entry.connectors[connector].run.encoder.name.startswith(specialist)
+    default = cli.load_yaml(cli.DEFAULT_CONFIG.read_text())["receivers"][receiver]
+    assert entry.context == default["context"]
+    if receiver == KIMI:  # the Kimi generation plan of the default config
+        assert entry.receiver.backends["generate"] == "kimi-vllm"
+        assert entry.generation_plan is not None and entry.generation_plan.max_num_seqs == 1
+
+
+@pytest.mark.parametrize(("receiver", "connector", "step", "domain", "specialist"), ALL_TASKS)
+def test_the_default_command_prints_the_download_of_each_connector_trained_on_all_tasks(
+    monkeypatch, receiver, connector, step, domain, specialist
+):
+    """Without the connector's checkpoint, the default command refuses it and prints the bundles that install it: the
+    connector, its domain, the all-tasks training set of its domain (never the released one), its items, its
+    specialist's embeddings and its receiver's ridge start."""
+    checkpoint = f"connectors/{receiver}/{connector}/step_{step:06d}"
+    monkeypatch.setattr(cli, "_workspace_pins", lambda: {n: p for n, p in _all_pins().items() if n != checkpoint})
+    with pytest.raises(SystemExit) as refused:
+        cli._choose(cli.DEFAULT_CONFIG, receiver, [connector])
+    message = str(refused.value)
+    assert f"not installed for {receiver}: {[connector]}" in message and checkpoint in message
+    expected = (
+        f"python -m latent_interconnect.release_download --connector {receiver}__{connector} --data {domain}-domain "
+        f"--data {domain}-training-set-all-tasks --data {domain}-items --data embeddings-{specialist} "
+        f"--data ridge-{receiver}__{specialist} --dest $LIP_DATA"
+    )
+    assert expected in message
+    assert cli._download_hint(receiver, [connector]) == expected
 
 
 def test_every_pin_of_the_shipped_config_is_reported_missing_from_an_empty_workspace():
@@ -110,12 +180,13 @@ def test_check_warns_when_an_empty_cuda_visible_devices_hides_the_gpus(deploymen
 # --- Kimi K2.6: software evidence only (fakes for vLLM, the GPUs and the weights) -----------------------------------
 
 
-def test_the_kimi_chat_run_is_the_released_runs_but_for_its_destination():
-    chat_run = cli.DEFAULT_CONFIG.parent / "runs" / f"{KIMI}__{STAGGERED}.yaml"
+@pytest.mark.parametrize("connector", [STAGGERED, f"{STAGGERED}-all-tasks"])
+def test_the_kimi_chat_run_is_the_released_runs_but_for_its_destination(connector):
+    chat_run = cli.DEFAULT_CONFIG.parent / "runs" / f"{KIMI}__{connector}.yaml"
     ours = load_resolved(chat_run, {}, unknown_pins="keep")
-    source = load_resolved(ROOT / "configs/runs/kimi-k2.6/esmc-6b-mlp4-staggered.yaml", {}, unknown_pins="keep")
-    achieved = cli.load_yaml((ROOT / "configs/runs/kimi-k2.6/esmc-6b-mlp4-staggered-achieved.yaml").read_text())
-    assert ours.pop("destination") == achieved["destination"] == "connectors/kimi-k2.6/esmc-6b-mlp4-staggered"
+    source = load_resolved(ROOT / f"configs/runs/kimi-k2.6/{connector}.yaml", {}, unknown_pins="keep")
+    achieved = cli.load_yaml((ROOT / f"configs/runs/kimi-k2.6/{connector}-achieved.yaml").read_text())
+    assert ours.pop("destination") == achieved["destination"] == f"connectors/kimi-k2.6/{connector}"
     source.pop("destination")
     assert ours == source
 
@@ -186,11 +257,23 @@ def test_kimi_is_selected_by_model_and_gets_its_context_options_and_environment(
         and argv[argv.index("--encoder-device") + 1] == "cuda"
     )
     receiver = kimi_node["config"]["receivers"][KIMI]
-    assert list(kimi_node["config"]["receivers"]) == [KIMI] and list(receiver["connectors"]) == [STAGGERED]
+    every = [STAGGERED, *(c for r, c, *_ in ALL_TASKS if r == KIMI)]  # every installed one
+    assert list(kimi_node["config"]["receivers"]) == [KIMI] and list(receiver["connectors"]) == every
     assert receiver["generation_plan"] == {"max_num_seqs": 1, "max_num_batched_tokens": 16384}
     environ = kimi_node["environ"]
     assert environ["VLLM_USE_V2_MODEL_RUNNER"] == "1" and environ["VLLM_USE_FLASHINFER_SAMPLER"] == "0"
     assert "PYTORCH_CUDA_ALLOC_CONF" not in environ
+
+
+@pytest.mark.parametrize("connector", [c for r, c, *_ in ALL_TASKS if r == KIMI])
+def test_kimi_serves_one_connector_trained_on_all_tasks_by_its_id(kimi_node, connector):
+    """``serve --model kimi-k2.6 --connectors <id>`` with the default config: the narrowed config handed to the
+    server holds that connector alone, with the Kimi generation plan and the context of the default config."""
+    assert cli.main(["serve", "--model", KIMI, "--connectors", connector]) == 0
+    receiver = kimi_node["config"]["receivers"][KIMI]
+    assert list(receiver["connectors"]) == [connector] and receiver["connectors"][connector]["step"] == 4800
+    assert receiver["generation_plan"] == {"max_num_seqs": 1, "max_num_batched_tokens": 16384}
+    assert receiver["context"] == 16384
 
 
 @pytest.mark.parametrize(

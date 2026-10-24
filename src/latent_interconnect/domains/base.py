@@ -281,6 +281,15 @@ class Domain(ABC):
     def scope_mask(self, task: TaskSpec, object_ids: pd.Index) -> pd.Series:
         """Return which objects a task may be scored on (e.g. molecules whose trained text does not state it)."""
 
+    def training_mask(self, task: TaskSpec, object_ids: pd.Index) -> pd.Series:
+        """Return which objects a task's label may train on when no task is held out (an all-tasks training set).
+
+        The scope (:meth:`scope_mask`) without the rules that only keep a zero-shot score fair (the molecule domain's
+        unstated subset); the rules that make a label unusable stay. By default the scope itself: a domain with such a
+        rule overrides this.
+        """
+        return self.scope_mask(task, object_ids)
+
 
 DOMAINS: Registry[type[Domain]] = Registry("domain")
 

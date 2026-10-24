@@ -21,6 +21,13 @@ next job. Each job is a :class:`Segment` (start, end, host, job, commit, devices
 one, and :attr:`Provenance.resumed` lists the earlier ones, so cost is the sum over :meth:`Provenance.segments`, never
 the last job alone.
 
+**Extended runs.** A training run extended from the finished run of a shorter config (the ``train`` stage's
+``extend_from`` option, ``run.train``) carries that run's jobs as its first segments: :attr:`Provenance.extended_from`
+(an :class:`Extension`) names the source execution and how many of :attr:`Provenance.resumed` are its jobs, so the cost
+it inherited (:meth:`Provenance.inherited_segments`) is told apart from the cost it incurred
+(:meth:`Provenance.new_segments`); a cost table that also cites the source charges the inherited jobs to the source
+only (``evaluation.cost``).
+
 **Hardware is recorded, not enforced.** An execution's hardware is
 :func:`hardware_of` its devices: the distinct accelerator models (``()`` on CPU). A computation may execute again on
 other hardware (another execution of the same computation: ``artifacts.records`` keeps the first one canonical
@@ -37,17 +44,19 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
+from typing import Any
 
-from pydantic import Field
+from pydantic import Field, SerializerFunctionWrapHandler, model_serializer
 
 from latent_interconnect import __version__
-from latent_interconnect.config import Config, added_field
+from latent_interconnect.config import Config, RecordKey, added_field
 from latent_interconnect.paths import NO_VCS, code_state
 
 __all__ = [
     "NO_VCS",
     "DeviceClass",
     "DirtyTreeError",
+    "Extension",
     "Provenance",
     "Segment",
     "WrongHardwareError",
@@ -169,6 +178,25 @@ class Segment(Config):
         return self.model_copy(update={"ended": _now()})
 
 
+class Extension(Config):
+    """The finished run an extended training run continued (``Provenance.extended_from``; ``run.train``).
+
+    Attributes:
+        config_sha: the source run's config digest: the extended run's config with ``steps`` set to :attr:`step`.
+        computation_key: the source's ``train`` computation.
+        record_id: the exact source execution whose run directory was copied.
+        step: the source's final step, where the extension started.
+        segments: how many of the extended run's :attr:`Provenance.resumed` segments, from the first, are the source
+            run's jobs (its segment ledger, copied with its state).
+    """
+
+    config_sha: str
+    computation_key: RecordKey
+    record_id: str
+    step: int = Field(ge=1)
+    segments: int = Field(ge=0)
+
+
 class Provenance(Config):
     """Code state and execution environment of one run.
 
@@ -200,6 +228,9 @@ class Provenance(Config):
             known after a canonical re-point; artifact metas cite computation keys and output digests instead, so
             identical results give identical artifacts. An added field: empty for a run that read no record, and
             records written before it existed keep their ids.
+        extended_from: the source of a training run extended from a shorter finished run (:class:`Extension`), or
+            None. An added field, left out of the stored form while None, so the record of every other execution is
+            written as before.
     """
 
     version: str
@@ -217,6 +248,15 @@ class Provenance(Config):
     pins: dict[str, str] = added_field(default_factory=dict)
     resumed: tuple[Segment, ...] = added_field(default=())
     input_executions: dict[str, str] = added_field(default_factory=dict)
+    extended_from: Extension | None = added_field(default=None)
+
+    @model_serializer(mode="wrap")
+    def _omit_no_extension(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        """Leave ``extended_from`` out while None, so a provenance without one is stored byte for byte as before."""
+        out: dict[str, Any] = handler(self)
+        if out.get("extended_from") is None:
+            out.pop("extended_from", None)
+        return out
 
     @classmethod
     def capture(cls, repo: Path | None, packages: dict[str, str], devices: tuple[str, ...]) -> Provenance:
@@ -273,6 +313,18 @@ class Provenance(Config):
             ValueError: if it has no end time.
         """
         return (*self.resumed, self.segment())
+
+    def inherited_segments(self) -> tuple[Segment, ...]:
+        """Return the segments an extended run inherited from its source (:attr:`extended_from`); () otherwise."""
+        return () if self.extended_from is None else self.resumed[: self.extended_from.segments]
+
+    def new_segments(self) -> tuple[Segment, ...]:
+        """Return the segments this execution incurred itself: :meth:`segments` after :meth:`inherited_segments`.
+
+        Raises:
+            ValueError: if it has no end time.
+        """
+        return self.segments()[len(self.inherited_segments()) :]
 
     def require_clean(self) -> None:
         """Raise unless the code tree was clean.

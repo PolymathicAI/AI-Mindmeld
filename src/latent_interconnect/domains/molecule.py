@@ -125,6 +125,20 @@ class MoleculeDomain(TableDomain):
             return pd.DataFrame(columns=list(OUT_OF_SCOPE_COLUMNS), index=pd.Index([], name="object_id"))
         return table
 
+    def training_mask(self, task: TaskSpec, object_ids: pd.Index) -> pd.Series:
+        """Return the scope without the unstated subset: every molecule but the cells the opt-in rules exclude.
+
+        Those cells (:meth:`out_of_scope`: a missing mass or charge, the cited cell lists) have no usable label, so
+        they stay out; a molecule whose trained text states the property is a training label like any other.
+
+        Raises:
+            KeyError: for an object id the domain does not hold.
+        """
+        scope = self.scope_mask(task, object_ids)  # refuses an object the domain does not hold
+        listed = self.out_of_scope()
+        excluded = scope.index.isin(listed.index[listed["task"] == task.id])
+        return pd.Series(~excluded, index=scope.index)
+
 
 class TaskImport(Config):
     """Which tasks of the evaluation item table enter the catalog, and how.

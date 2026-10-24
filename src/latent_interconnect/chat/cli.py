@@ -98,10 +98,15 @@ ENGINES: Mapping[str, Engine] = {
 
 _PROTEIN = ("protein-domain", "protein-training-set", "protein-items")
 _MOLECULE = ("molecule-domain", "molecule-training-set", "molecule-items")
+_PROTEIN_ALL_TASKS = ("protein-domain", "protein-training-set-all-tasks", "protein-items")
+_MOLECULE_ALL_TASKS = ("molecule-domain", "molecule-training-set-all-tasks", "molecule-items")
 BUNDLES: Mapping[str, tuple[str, ...]] = {
     "esmc-600m": (*_PROTEIN, "embeddings-esmc-600m", "ridge-{receiver}__esmc-600m"),
     "esmc-6b": (*_PROTEIN, "embeddings-esmc-6b", "ridge-{receiver}__esmc-6b"),
     "esmc-6b-mlp4-staggered": (*_PROTEIN, "embeddings-esmc-6b", "ridge-{receiver}__esmc-6b"),
+    "esmc-6b-mlp4-staggered-all-tasks": (*_PROTEIN_ALL_TASKS, "embeddings-esmc-6b", "ridge-{receiver}__esmc-6b"),
+    "esmc-6b-mlp4-all-tasks": (*_PROTEIN_ALL_TASKS, "embeddings-esmc-6b", "ridge-{receiver}__esmc-6b"),
+    "chemfm-3b-mlp4-all-tasks": (*_MOLECULE_ALL_TASKS, "embeddings-chemfm-3b", "ridge-{receiver}__chemfm-3b"),
     "mimic": (*_PROTEIN, "embeddings-mimic", "ridge-{receiver}__mimic"),
     "pglm-1b": (*_PROTEIN, "embeddings-pglm-1b", "ridge-{receiver}__pglm-1b"),
     "chemfm-1b": (*_MOLECULE, "embeddings-chemfm-1b", "ridge-{receiver}__chemfm-1b"),

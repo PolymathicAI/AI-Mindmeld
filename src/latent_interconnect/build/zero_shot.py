@@ -37,6 +37,9 @@ it is in this module.
   (``TaskScope.IMPLIED``: answered by a trained field, e.g. a molecule's net charge or element content stated by its
   ChEBI classes) is not zero-shot and is not screened by default; a spec may still list it, and then its
   equivalents are removed like any other. A trained task is never zero-shot.
+- **All tasks.** An all-tasks training set (``TrainingSetSpec.all_tasks``) holds no task out: its screen names no
+  zero-shot task, so it removes nothing, and every stream built on it may train every task of the catalog, held-out
+  and implied ones included (``data.streams.build_stream``). Nothing trained on it is scored zero-shot.
 - **Recorded.** The training-set artifact's metadata holds the spec, the removed fields per task and field
   (``removed``, :class:`~latent_interconnect.data.training_text.TrainingText`), the removed list elements per task and
   field (``removed_elements``), the distinct elements removed per list field (``screened_elements``), and up to
@@ -70,7 +73,7 @@ from pydantic import Field, model_validator
 
 from latent_interconnect.artifacts.store import ArtifactRef, ArtifactStore
 from latent_interconnect.build.metadata_export import MARKER, release_registry, resolve_release_export
-from latent_interconnect.config import ArtifactDigest, Config, StageConfig, rationale
+from latent_interconnect.config import ArtifactDigest, Config, StageConfig, added_field, rationale
 from latent_interconnect.data.items import ITEM_SET_KIND, load_item_set
 from latent_interconnect.data.sampler import MixtureEntry
 from latent_interconnect.data.streams import build_stream
@@ -79,6 +82,7 @@ from latent_interconnect.data.training_text import (
     TrainingText,
     commit_training_text,
     load_training_text,
+    training_objects,
 )
 from latent_interconnect.domains.base import (
     Domain,
@@ -118,6 +122,7 @@ __all__ = [
     "own_labels",
     "read_sample",
     "screen_fields",
+    "training_ids",
     "training_set_construction",
     "training_set_spec",
     "wording_screen",
@@ -278,10 +283,11 @@ class ScreenSpec(Config):
             trained Yes/No task's label value may not be screened (:func:`build_training_set`).
         element_parts: list field → the separator inside its elements (e.g. ``" > "`` in a class-graph edge
             ``"a > b"``): a detector that matches any part, or the whole element, removes the whole element.
-        zero_shot_tasks: every task scored zero-shot; it must cover the domain's held-out tasks.
+        zero_shot_tasks: every task scored zero-shot; it must cover the domain's held-out tasks. Empty only in the
+            screen of an all-tasks training set (``TrainingSetSpec.all_tasks``), which screens nothing.
         descendants: zero-shot task → its descendant zero-shot tasks (membership in one implies the task), whose
             detectors also screen it, each in its own scope.
-        detectors: the detectors per task (at least one per zero-shot task).
+        detectors: the detectors per task (at least one per zero-shot task, so none without one).
         kept_elements: property-list field → zero-shot task → element → its evidence (rationale): the elements that
             must be read against the task (:func:`element_read_required`, on :func:`element_precision`) and that the
             read keeps (a correlate, not a statement of the property). None may be one the rule screens: an element
@@ -293,9 +299,9 @@ class ScreenSpec(Config):
     list_fields: dict[str, str] = Field(default_factory=dict)
     property_list_fields: tuple[str, ...]
     element_parts: dict[str, str] = Field(default_factory=dict)
-    zero_shot_tasks: tuple[str, ...] = Field(min_length=1)
+    zero_shot_tasks: tuple[str, ...]
     descendants: dict[str, tuple[str, ...]] = Field(default_factory=dict)
-    detectors: tuple[DetectorSpec, ...] = Field(min_length=1)
+    detectors: tuple[DetectorSpec, ...]
     kept_elements: dict[str, dict[str, dict[str, FieldEvidence]]] = rationale(default_factory=dict)
 
     @model_validator(mode="after")
@@ -374,23 +380,38 @@ class TrainingSetSpec(StageConfig):
 
     Attributes:
         domain: the domain at a fixed data version.
-        train_ids: the training objects: an object list (``item_set``), all in the ``train`` split.
+        train_ids: the training objects, all in the ``train`` split: an object list (``item_set``), or a training set
+            of the same domain, whose objects they are (e.g. a released training set, for an all-tasks set on its
+            objects; the released sets ship no object list).
         screen: the screen (:class:`ScreenSpec`).
         screened_elements: list field → the distinct elements the screen removes from these training objects
             (rationale; it depends on ``train_ids``, so each training set records its own, and the slice test checks it
             against the data).
+        all_tasks: False (the paper's procedure): the domain's held-out tasks are zero-shot, screened and never
+            trained. True: no task is held out; the screen names no zero-shot task, so it removes nothing and only
+            selects the fields, and streams built on the set may train every task of the catalog
+            (``data.streams.build_stream``), for connectors trained on everything at the cost of zero-shot evaluation.
     """
 
     domain: DomainSpec
     train_ids: ArtifactDigest
     screen: ScreenSpec
     screened_elements: dict[str, tuple[str, ...]] = rationale(default_factory=dict)
+    all_tasks: bool = added_field(default=False)
 
     @model_validator(mode="after")
     def _check(self) -> TrainingSetSpec:
         stray = sorted(set(self.screened_elements) - set(self.screen.list_fields))
         if stray:
             raise ValueError(f"screened_elements names fields that are not lists: {stray}")
+        if self.all_tasks and (self.screen.zero_shot_tasks or self.screened_elements):
+            raise ValueError(
+                "an all-tasks training set holds no task out: its screen names no zero-shot task and removes no "
+                f"element (zero_shot_tasks {list(self.screen.zero_shot_tasks)}, screened_elements "
+                f"{sorted(self.screened_elements)})"
+            )
+        if not self.all_tasks and not self.screen.zero_shot_tasks:
+            raise ValueError("the screen names no zero-shot task; only an all-tasks training set (all_tasks) has none")
         return self
 
 
@@ -760,25 +781,47 @@ def screen_fields(
     return Screened(kept, tally.removed, tally.elements, tally.examples, screened)
 
 
+def training_ids(spec: TrainingSetSpec, store: ArtifactStore) -> tuple[str, ...]:
+    """Return the training objects ``spec.train_ids`` names: an item set's objects, or a training set's.
+
+    Raises:
+        ValueError: if a cited training set's construction is on another domain (its objects would be another domain
+            version's).
+    """
+    ref = store.ref(spec.train_ids)
+    if ref.kind != TRAINING_SET_KIND:
+        return load_item_set(store, ArtifactRef(spec.train_ids, ITEM_SET_KIND)).object_ids
+    source = training_set_construction(store, ref).domain
+    if (source.name, source.data) != (spec.domain.name, spec.domain.data):
+        raise ValueError(
+            f"training set {ref.short} is on domain {source.name} {source.data[:12]}, not {spec.domain.name} "
+            f"{spec.domain.data[:12]}: its objects cannot be this training set's"
+        )
+    return training_objects(store, ref)
+
+
 def build_training_set(spec: TrainingSetSpec, store: ArtifactStore) -> ArtifactRef:
     """Screen every training field and commit the ``training_set`` artifact.
 
     The artifact holds the training objects and their kept texts (``data.training_text``); its metadata holds the
     spec (``spec``, its ``spec_digest``), ``removed``, ``removed_elements``, ``screened_elements`` and ``examples``
-    (:class:`Screened`).
+    (:class:`Screened`). An all-tasks set (``spec.all_tasks``) screens nothing: it keeps every field the screen names,
+    and its text says so (``TrainingText.all_tasks``). Its stored spec holds ``all_tasks`` only when it is set, so a
+    screened set's stored spec and artifact do not depend on the field.
 
     Raises:
-        ValueError: if a training object is outside the ``train`` split, a held-out task of the domain is not
-            zero-shot here, a trained task is, a detector screens a trained Yes/No task's label value in a property
-            list (the trained label would lose its text), a zero-shot task or a field is unknown to the domain, or a
-            detector is misconfigured.
+        ValueError: if a training object is outside the ``train`` split, ``train_ids`` names a training set of
+            another domain, a held-out task of the domain is not zero-shot here (unless the set trains all tasks), a
+            trained task is, a detector screens a trained Yes/No task's label value in a property list (the trained
+            label would lose its text), a zero-shot task or a field is unknown to the domain, or a detector is
+            misconfigured.
     """
     domain = open_domain(spec.domain, store)
-    ids = load_item_set(store, ArtifactRef(spec.train_ids, ITEM_SET_KIND)).object_ids
+    ids = training_ids(spec, store)
     require_splits(domain, ids, {"train"}, "the training set")
     held_out = [t.id for t in domain.tasks().values() if t.scope == TaskScope.HELD_OUT]
     screen = spec.screen
-    missing = sorted(set(held_out) - set(screen.zero_shot_tasks))
+    missing = [] if spec.all_tasks else sorted(set(held_out) - set(screen.zero_shot_tasks))
     if missing:
         raise ValueError(f"held-out tasks of the domain that are not screened as zero-shot: {missing}")
     trained = sorted(
@@ -793,9 +836,9 @@ def build_training_set(spec: TrainingSetSpec, store: ArtifactStore) -> ArtifactR
     screened = screen_fields(
         _field_table(domain, screen.fields, ids), screen.list_fields, detectors, screen.element_parts
     )
-    text = TrainingText(ids, screened.kept, screened.removed)
+    text = TrainingText(ids, screened.kept, screened.removed, all_tasks=spec.all_tasks)
     meta = {
-        "spec": spec.model_dump(mode="json"),
+        "spec": spec.model_dump(mode="json", exclude=None if spec.all_tasks else {"all_tasks"}),
         "spec_digest": spec.digest(),
         "removed_elements": screened.removed_elements,
         "screened_elements": screened.screened_elements,

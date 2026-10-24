@@ -140,6 +140,20 @@ and then trying to pin it creates ambiguity. To adopt a recorded execution witho
 
 Stages require a clean, committed checkout and record its commit. Keep generated configs and data outside it.
 
+### Extending a training run
+
+To continue a finished run to more steps, raise `steps` in a copy of its config and pass the finished run's steps as
+`extend_from`:
+
+```bash
+python -m latent_interconnect.run.train --config run-6000-steps.yaml --option extend_from=5000 --pin NAME
+```
+
+The stage refuses if the new config differs from the finished one in anything but `steps`, or if the learning-rate
+schedule depends on the total steps (`cosine`). A completed run keeps its final state, `resume.pt`, for this: about
+three times the connector's weights (22–25 GB for a large multi-token MLP connector). Deleting it frees the space,
+but the run can then no longer be extended.
+
 ## 6. Train a connector on CPU
 
 This small example uses Qwen2.5-0.5B-Instruct with ESM-C 300M to train a connector on 32 proteins

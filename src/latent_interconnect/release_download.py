@@ -93,19 +93,22 @@ BUNDLE_FILE = "bundle.json"
 _COMMIT = re.compile(r"[0-9a-f]{40}")
 CONNECTORS_REPO = "sgolkar/ai-mindmeld-connectors"
 """The model repository of the connector bundles."""
-CONNECTORS_REVISION = "72a79954ec2780f49f96ccf3a4bdaf0d19642f6b"
-"""The release commit of :data:`CONNECTORS_REPO`: 27 entries, the 25 step-2000 release connector bundles (the 19 paper
+CONNECTORS_REVISION = "f69ffac6715789f730ef0985ef54ae82c7051954"
+"""The release commit of :data:`CONNECTORS_REPO`: 31 entries, the 25 step-2000 release connector bundles (the 19 paper
 connectors, the two ESM-C 6B affine connectors of Kimi K2.6 and Gemma 3 12B, Kimi K2.6's ESM-C 6B mlp connector, the
-two ChemFM-3B affine connectors of Gemma 3 4B and 12B and Kimi K2.6's ChemFM-3B mlp connector) and two DEMO
-connectors (``*-demo``, software demonstrations documented in ``examples/README.md``, not results)."""
+two ChemFM-3B affine connectors of Gemma 3 4B and 12B and Kimi K2.6's ChemFM-3B mlp connector), the four connectors
+trained on all tasks (``*-all-tasks``: the ESM-C 6B and ChemFM-3B four-token MLP connectors of Kimi K2.6, at step 4800,
+and of Gemma 3 12B, at step 5000; they have no zero-shot evaluation) and two DEMO connectors (``*-demo``, software
+demonstrations documented in ``examples/README.md``, not results)."""
 DATA_REPO = "sgolkar/ai-mindmeld-data"
 """The dataset repository of the data bundles (domains, training sets, item sets, embeddings, ridge starts)."""
-DATA_REVISION = "a27d7808625794b31e44ad9b909816c17748b8f0"
-"""The release commit of :data:`DATA_REPO`: 41 entries in the index ``data.json``: the 38 bundles of the full release
-(the two domains, two training sets and two item-set bundles, the eight encoders' embeddings and the 24 ridge starts the
-release connectors' run and suite configs read), the two minimal eval sets ``protein-esmc-600m-mini`` and
-``molecule-chemfm-1b-mini``, and one DEMO bundle (``*-demo``, a software demonstration documented in
-``examples/README.md``, not results)."""
+DATA_REVISION = "6ab9a68b9ddc15249ff4aa585e59b2b5a00f7f83"
+"""The release commit of :data:`DATA_REPO`: 46 entries in the index ``data.json``: the 43 bundles of the full release
+(the two domains, four training sets (each domain's released one and its all-tasks one), three item-set bundles (the
+two domains' and the Rhea cross-domain item sets), ten embedding bundles (the eight encoders' embeddings and the ESM-C
+6B and ChemFM-3B embeddings of the Rhea objects) and the 24 ridge starts the release connectors' run and suite configs
+read), the two minimal eval sets ``protein-esmc-600m-mini`` and ``molecule-chemfm-1b-mini``, and one DEMO bundle
+(``*-demo``, a software demonstration documented in ``examples/README.md``, not results)."""
 _MB_BELOW = 10**8
 """Sizes below 0.1 GB (10^8 bytes) are printed in MB."""
 INDEXES = {"connector": ("connectors.json", "connectors"), "data": ("data.json", "data")}

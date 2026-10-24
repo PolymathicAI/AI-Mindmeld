@@ -26,5 +26,6 @@ https://github.com/TheLuoFengLab/ChemFM/blob/master/LICENSE) or on PGLM-1B
 on top of that grant for the connectors *__chemfm-1b, *__chemfm-3b* and
 *__pglm-1b, their ridge starts and molecule-chemfm-1b-mini, and as the
 governing terms of the embedding data bundles embeddings-chemfm-1b,
-embeddings-chemfm-3b and embeddings-pglm-1b, which are outside that grant.
+embeddings-chemfm-3b, embeddings-chemfm-3b-rhea and embeddings-pglm-1b, which
+are outside that grant.
 See LICENSE-ARTIFACTS.md.

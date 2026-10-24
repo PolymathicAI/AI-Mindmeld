@@ -21,11 +21,11 @@ one execution and that execution's provenance. Figures, tables and the paper's n
   form (``Config.identity``), so a field added to ``Record`` or ``Provenance`` after records were written is declared
   with ``config.added_field`` and left out while at its default: a stored record keeps its id under newer code (the
   schema-evolution rule; a golden record written by older code is tested).
-- Reading tolerates newer provenance: a stored record whose provenance (or a resumed segment) has a field this code
-  does not know, written by newer code, still loads, and the field is kept, so its id verifies (an added field holds an
-  empty default, ``config.added_field``, which the id leaves out). An unknown field anywhere else is refused, and
-  writing (:meth:`RecordStore.put`) stays strict. So a long job at an older commit can finish after newer code wrote
-  records.
+- Reading tolerates newer provenance: a stored record whose provenance (or a resumed segment, or its extension
+  source) has a field this code does not know, written by newer code, still loads, and the field is kept, so its id
+  verifies (an added field holds an empty default, ``config.added_field``, which the id leaves out). An unknown field
+  anywhere else is refused, and writing (:meth:`RecordStore.put`) stays strict. So a long job at an older commit can
+  finish after newer code wrote records.
 
 The normal case is one execution per computation, which is canonical without any declaration. If a computation was
 executed more than once, :meth:`RecordStore.declare_canonical` names the one to use, with a reason; it may be
@@ -73,7 +73,7 @@ from latent_interconnect.config import (
     canonical_sha256,
     is_sha256,
 )
-from latent_interconnect.provenance import Provenance, Segment
+from latent_interconnect.provenance import Extension, Provenance, Segment
 
 __all__ = [
     "CANONICAL_NAME",
@@ -88,6 +88,7 @@ __all__ = [
     "RecordStore",
     "ResolvedRecords",
     "StoredPurpose",
+    "computation_key_of",
     "drawn_from",
     "purpose_class",
     "record_output",
@@ -180,14 +181,9 @@ class Record(Config):
     provenance: Provenance
 
     def computation_key(self) -> str:
-        """Return the identity shared by every execution of this computation."""
-        body = {
-            "kind": self.kind,
-            "purpose": self.purpose,
-            "config_sha": self.config_sha,
-            "inputs": {k: v.sha256 for k, v in self.inputs.items()},
-        }
-        return canonical_sha256(body)
+        """Return the identity shared by every execution of this computation (:func:`computation_key_of`)."""
+        inputs = {k: v.sha256 for k, v in self.inputs.items()}
+        return computation_key_of(self.kind, self.purpose, self.config_sha, inputs)
 
     def record_id(self) -> str:
         """Return the identity of this execution."""
@@ -196,6 +192,14 @@ class Record(Config):
     def purpose_class(self) -> Purpose:
         """Return this record's lineage class: its stored purpose classified (:func:`purpose_class`)."""
         return purpose_class(self.purpose)
+
+
+def computation_key_of(kind: str, purpose: str, config_sha: str, inputs: Mapping[str, str]) -> str:
+    """Return the computation key of a record from its parts: :meth:`Record.computation_key`'s one rule.
+
+    ``inputs`` maps each input name to its artifact digest. A stage finds a record by key with it, without a record.
+    """
+    return canonical_sha256({"kind": kind, "purpose": purpose, "config_sha": config_sha, "inputs": dict(inputs)})
 
 
 def _with_newer(identity: dict[str, object], extra: dict[str, object] | None) -> dict[str, object]:
@@ -210,9 +214,17 @@ class _StoredSegment(Segment):
         return _with_newer(super().identity(), self.model_extra)
 
 
+class _StoredExtension(Extension):
+    model_config = ConfigDict(extra="allow")
+
+    def identity(self) -> dict[str, object]:
+        return _with_newer(super().identity(), self.model_extra)
+
+
 class _StoredProvenance(Provenance):
     model_config = ConfigDict(extra="allow")
     resumed: tuple[_StoredSegment, ...] = added_field(default=())
+    extended_from: _StoredExtension | None = added_field(default=None)
 
     def identity(self) -> dict[str, object]:
         return _with_newer(super().identity(), self.model_extra)

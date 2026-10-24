@@ -751,5 +751,114 @@
       }
     }
   ],
-  "connector_revision_note": "A bundle's own connector_revision, where present, overrides the top-level revision."
+  "connector_revision_note": "A bundle's own connector_revision, where present, overrides the top-level revision.",
+  "all_tasks": {
+    "description": "Connectors trained on all tasks, the unseen groups' tasks included, on the training objects only, so their unseen_group_aurocs score trained tasks on unseen objects; they are listed apart from bundles, never ranked with them. Their sources are the two suite executions of each checkpoint.",
+    "bundles": [
+      {
+        "bundle": "kimi-k2.6__esmc-6b-mlp4-staggered-all-tasks",
+        "connector_revision": "f69ffac6715789f730ef0985ef54ae82c7051954",
+        "checkpoint_pin": "connectors/kimi-k2.6/esmc-6b-mlp4-staggered-all-tasks/step_004800",
+        "checkpoint_sha256": "3830e3b199835406f8cf7e513f1ae565d9d822673832d1b8bb4ccdf771488da6",
+        "domain": "protein",
+        "trained_auroc": 0.9574068060917481,
+        "unseen_group_aurocs": {
+          "Lineage": 0.9894017345943406,
+          "Magnesium": 0.9364136030525104,
+          "Coiled coil": 0.8955022456382795,
+          "Acetylation": 0.8697668365389885,
+          "Length>320": 0.9580643893620993
+        },
+        "total_auroc": 0.943618283964496,
+        "sources": {
+          "trained": {
+            "computation_key": "60eb142439b5acd8c1e53013c3b3876c72d271b79158b91e3736fb04ea5a370c",
+            "record_id": "613e53041cfe9afd256e31e2d19489a4d5db0a348e2ddc883b41094552cfa37b"
+          },
+          "unseen": {
+            "computation_key": "99e2db73609fb7a22d1e7286e7eddd3103a0423e0c6a9f191bd7f466d28c20f4",
+            "record_id": "8e5ba59822df02a65e580490cabf246a2f682327de82b2272e527dea229ec3bb"
+          }
+        }
+      },
+      {
+        "bundle": "kimi-k2.6__chemfm-3b-mlp4-all-tasks",
+        "connector_revision": "f69ffac6715789f730ef0985ef54ae82c7051954",
+        "checkpoint_pin": "connectors/kimi-k2.6/chemfm-3b-mlp4-all-tasks/step_004800",
+        "checkpoint_sha256": "2e3cc64074f2abbc1e2603ca138c17f288f0539a594ff1a1198d02e90d83aee0",
+        "domain": "molecule",
+        "trained_auroc": 0.9588234656088374,
+        "unseen_group_aurocs": {
+          "Drug roles": 0.8939881200434323,
+          "Metabolite roles": 0.6702379158047744,
+          "molecular-mass": 0.9835384420197919,
+          "Agrochemical": 0.859874284243842,
+          "Other": 0.8395155643035822
+        },
+        "total_auroc": 0.904127165445961,
+        "sources": {
+          "trained": {
+            "computation_key": "02c5546020212c25b4d2bebf65235770a09dacd762dec1ccc4d6507172c0125c",
+            "record_id": "c73004836bbc12225c73e14303af0e895f8988a12410bd07e980b23bd7448945"
+          },
+          "unseen": {
+            "computation_key": "48ed906c2b43b81ffb983f294e77aa40f742cc455f390f095f18d766d39cd79e",
+            "record_id": "cc4a661dcc5a12cb6dee1bb47165b7b2c7664ef44f2324477eb2e4255a6627cd"
+          }
+        }
+      },
+      {
+        "bundle": "gemma-3-12b-it__esmc-6b-mlp4-all-tasks",
+        "connector_revision": "f69ffac6715789f730ef0985ef54ae82c7051954",
+        "checkpoint_pin": "connectors/gemma-3-12b-it/esmc-6b-mlp4-all-tasks/step_005000",
+        "checkpoint_sha256": "55c12e22c81f6c36f46563957b626eef92dc40e122ce656d9cd2e64a09ff4fe7",
+        "domain": "protein",
+        "trained_auroc": 0.9475716195445809,
+        "unseen_group_aurocs": {
+          "Lineage": 0.9778865134949482,
+          "Magnesium": 0.9122554660529344,
+          "Coiled coil": 0.8864657108308862,
+          "Acetylation": 0.8362992492739328,
+          "Length>320": 0.9359557212610647
+        },
+        "total_auroc": 0.9286720758636671,
+        "sources": {
+          "trained": {
+            "computation_key": "5fdf190fec71fb28cca6cdc88f8db5fc183c2f94cf096dd022a655c5a9093d8a",
+            "record_id": "d932ac9501992c7509e0b9109c98a1d387a92687e323ab303364e8dda4c3501b"
+          },
+          "unseen": {
+            "computation_key": "db5be0faca57d2f500eed114eb77bcfbc640e8c6a7912db7d9bdf8d88df40567",
+            "record_id": "434539ad7237e76b6ef80bf0596bd0eabed23a7895bdc3e41abff3acca1dd69c"
+          }
+        }
+      },
+      {
+        "bundle": "gemma-3-12b-it__chemfm-3b-mlp4-all-tasks",
+        "connector_revision": "f69ffac6715789f730ef0985ef54ae82c7051954",
+        "checkpoint_pin": "connectors/gemma-3-12b-it/chemfm-3b-mlp4-all-tasks/step_005000",
+        "checkpoint_sha256": "c9984b369c900fdf5a240b594c2d78e13b07b56d52e85bc1f4e8da210fb5a7ab",
+        "domain": "molecule",
+        "trained_auroc": 0.9351501834321424,
+        "unseen_group_aurocs": {
+          "Drug roles": 0.8371131551752948,
+          "Metabolite roles": 0.694394990397744,
+          "molecular-mass": 0.9627886323268207,
+          "Agrochemical": 0.919058048598709,
+          "Other": 0.8340316689811733
+        },
+        "total_auroc": 0.8923137412640454,
+        "sources": {
+          "trained": {
+            "computation_key": "9773bf8d30f024dc4a85f3e22f64b983140e61443225bbab1db7615af08b4c1d",
+            "record_id": "f01cc9cb178b0702db9661498d36e808c007ca5e683bdef98e85bd950c3311a3"
+          },
+          "unseen": {
+            "computation_key": "d546b3ceeed6fcc5f6446537909b954f0dca2fde8353e08e5ee2b878a301add9",
+            "record_id": "b9b6a0bfa7a6fe3f412182d8db91bdbafc8f58d1826b02e232c19535657a5511"
+          }
+        }
+      }
+    ]
+  }
 }

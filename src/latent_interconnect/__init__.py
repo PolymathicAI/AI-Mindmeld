@@ -23,4 +23,4 @@ the shipped tests do not check):
 How to extend each part and run the stages: ``examples/guides/extending.md`` in the repository.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
